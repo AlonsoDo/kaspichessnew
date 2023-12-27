@@ -1,0 +1,26 @@
+{
+  "name": "kaspichessnew",
+  "version": "0.0.1",
+  "description": "Play Chess By Internet With Real People",
+  "main": "index.html",
+  "keywords": [
+    "Chess",
+    "Play",
+    "Internet",
+    "Real",
+    "Time",
+    "Online",
+    "Club",
+    "Virtual"
+  ],
+  "author": "ApoloSoft",
+  "license": "Free",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": "18.15.0",
+    "npm": "9.5.0"
+  }
+}
