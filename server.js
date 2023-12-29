@@ -5,23 +5,65 @@ var io = require('socket.io')(http);
 
 app.use(express.static(__dirname + '/public'));
 
-//Default
+//Default General Room
 var Room = 1;
-var nContRooms = 1;
+
+var nContRooms = 2;
+
+var aRetos = [];
 
 io.on('connection', function(socket){
 
    socket.join('Room' + Room);
 
+   console.log(socket.id)
+
+   socket.emit('EnviarSocketId',{SocketId:socket.id});
+
+   //Send this event to everyone in the general room = 1.
+   io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
+
+   socket.on('AceptarReto',function(data){
+      console.log('AceptarReto')
+      console.log(socket.id)
+      // Join to Room
+      socket.join(data.Room);
+      // Join Oponent to room (data.OpName)
+      var OpSocketId;
+      for (var i = 0; i < aRetos.length; i++){
+         if (aRetos[i].MyName == data.OpName){
+            OpSocketId = aRetos[i].SocketId;
+            io.sockets.sockets.get(OpSocketId).join(data.Room);
+            console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName});
+            break;
+         }
+      }
+
+   });
+   
    socket.on('CrearReto',function(data){
       console.log('Crear reto');
       var MyName = data.MyName;
       io.emit('CrearRetoBack',{MyName:MyName,Room:nContRooms});
+      console.log(socket.id)
+      aRetos.push({MyName:MyName,Room:nContRooms,SocketId:socket.id})
       nContRooms++;
-   });   
-
-   //Send this event to everyone in the room.
-   io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
+   }); 
+   
+   socket.on('CancelarReto',function(data){
+      var bRoom;
+      console.log(data.MyName)
+      // Buscar reto y borrar
+      for (var i = 0; i < aRetos.length; i++){
+         if (aRetos[i].MyName == data.MyName){            
+            bRoom = aRetos[i].Room;
+            aRetos.splice(i,1);
+            break;
+         }
+      }
+      io.emit('CancelarRetoBack',{Room:bRoom});
+   });
 
    socket.on('CambioSala',function(data){
       console.log('Sala anterior: ' + data.SalaAnte);

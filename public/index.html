@@ -40,8 +40,9 @@
          var board1;
          var Room;
          var MyName;
-         var nContRows = 1;
-
+         var MySocketId;
+         var RoomReto;
+         
          $(document).ready(function(){
 
             socket = io();
@@ -50,21 +51,43 @@
             var config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd};
             board1 = ChessBoard('board1',config);
 
-            $('#ContenedorRetos').hide();
+            $('#ContenedorTablero').hide();
 
+            socket.on('AceptarRetoBack',function(data){
+               AceptarRetoBack(data);
+            }); 
+            
+            socket.on('EnviarSocketId',function(data){
+               MySocketId = data.SocketId;
+            });
+            
             socket.on('CrearRetoBack',function(data){
-               jQuery("#GridRetos").jqGrid('addRowData',nContRows,{Room:nContRows,Player:data.MyName,Rating:'1200',Time:'--/--',Manner:'Unrated'});
-               nContRows++;
+               RoomReto = data.Room;
+               jQuery("#GridRetos").jqGrid('addRowData',RoomReto,{Room:RoomReto,Player:data.MyName,Rating:'1200',Time:'--/--',Manner:'Unrated'});
             });   
 
-            MyName = 'Player' + Math.floor(Math.random() * 10000);
+            MyName = 'Player' + Math.floor(Math.random()*10000);
 
             $('#btCrearReto').button();
+
             $('#btCrearReto').on('click',function(){
                socket.emit('CrearReto',{MyName:MyName})
+               $('#btCancelarReto').show();
+               $('#btCrearReto').hide();
+            });
+
+            $('#btCancelarReto').on('click',function(){
+               socket.emit('CancelarReto',{MyName:MyName})
+               $('#btCancelarReto').hide();
+               $('#btCrearReto').show();
             });
 
             $('#btCancelarReto').button();
+            $('#btCancelarReto').hide();
+
+            socket.on('CancelarRetoBack',function(data){
+               CancelarRetoBack(data);
+            });
 
             IniGridRetos();
             jQuery('#GridRetos').addClass('myclass');
@@ -99,7 +122,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.0.1 by Alonso Dominguez (c) 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.0.2 by Alonso Dominguez (c) 2024</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
             <div style="margin-left:10px; margin-top:10px; float:left; background-color:#e8e8e8; border:0px coral solid; width:525px; height:525px;">
@@ -109,6 +132,7 @@
          <div id="ContenedorTablero" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
          
             <div id="NombreOponente" style="background-color:#e8e8e8; border:1px black solid; width:200px; height:30px; margin-top:12px; margin-left:10px; float:left;">
+               <label id="lbNombreOponente" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Player0000</label>								
             </div>
 
             <div style="margin-left:54px; margin-top:10px; float:left; background-color:#e8e8e8; border:0px coral solid; width:436px; height:436px;">
@@ -116,6 +140,7 @@
             </div>
 
             <div id="NombreJugador" style="background-color:#e8e8e8; border:1px black solid; width:200px; height:30px; margin-top:10px; margin-left:10px; float:left;">
+               <label id="lbNombreJugador" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Player0000</label>								
             </div>
 
          </div>
