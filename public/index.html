@@ -13,7 +13,9 @@
       <script src="js/retos.js"></script>
       <script src="js/board.js"></script>
       <script src="js/chessboard-1.0.0.min.js"></script>
-      <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">        
+      <link rel="stylesheet" href="css/chessboard-1.0.0.min.css"> 
+      <script>var exports = {};</script>
+      <script src="js/chess.js"></script>       
       <style>
          .ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl, .ui-corner-right, .ui-corner-tr, .ui-corner-bottom, .ui-corner-bl, .ui-corner-br {
          border-radius:0;
@@ -37,15 +39,20 @@
       <script>
 
          var socket;
+         var chess = new Chess();
          var board1;
          var Room;
          var MyName;
          var MySocketId;
          var RoomReto;
+         var PlayRoom;
          
          $(document).ready(function(){
 
             socket = io();
+
+            MyName = 'Player' + Math.floor(Math.random()*10000);
+            $('#lbJugadorConectado').text(MyName);
 
             // Posicion inicial
             var config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd};
@@ -53,6 +60,14 @@
 
             $('#ContenedorTablero').hide();
 
+            socket.on('SendPosBack',function(data){
+               SendPosBack(data);
+            });
+            
+            socket.on('SetValuesBack',function(data){
+               SetValuesBack(data);
+            });
+            
             socket.on('AceptarRetoBack',function(data){
                AceptarRetoBack(data);
             }); 
@@ -65,8 +80,6 @@
                RoomReto = data.Room;
                jQuery("#GridRetos").jqGrid('addRowData',RoomReto,{Room:RoomReto,Player:data.MyName,Rating:'1200',Time:'--/--',Manner:'Unrated'});
             });   
-
-            MyName = 'Player' + Math.floor(Math.random()*10000);
 
             $('#btCrearReto').button();
 
@@ -83,7 +96,11 @@
             });
 
             $('#btCancelarReto').button();
+            $('#btAbortarPartida').button();
+            $('#btOfrecerTablas').button();
+            $('#btAbortarPartida').hide();
             $('#btCancelarReto').hide();
+            $('#btOfrecerTablas').hide();
 
             socket.on('CancelarRetoBack',function(data){
                CancelarRetoBack(data);
@@ -95,12 +112,12 @@
             $('#Tabs').tabs();
 
             socket.on('ConnectToRoom',function(data){
-               $('#Mensaje').text(data);
+               //$('#Mensaje').text(data);
                // General Room
                Room = 1;
             });
 
-            $('#Unirse').on('click',function(){
+            /*$('#Unirse').on('click',function(){
                socket.emit('CambioSala',{SalaAnte:Room,SalaNueva:$('#NumeroSala').val()});               
                Room = $('#NumeroSala').val();
                $('#Mensaje').text('Estas en la sala ' + Room);
@@ -112,7 +129,7 @@
 
             socket.on('EnviarChatBack',function(data){
                $('#MensajeChat').text(data.TextoChat);               
-            });
+            });*/
 
          });
       </script>
@@ -122,7 +139,8 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.0.2 by Alonso Dominguez (c) 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.0.3 by Alonso Dominguez (c) 2024</label>								
+            <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
             <div style="margin-left:10px; margin-top:10px; float:left; background-color:#e8e8e8; border:0px coral solid; width:525px; height:525px;">
@@ -175,6 +193,8 @@
             <div style="margin-left:10px; margin-top:10px; float:left; background-color:#e8e8e8; border:0px coral solid; width:525px; height:64px;">
                <button style="width:180px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCrearReto" title="Create new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-plus">icon</span>Create Game</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCancelarReto" title="Cancel new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-close">icon</span>Cancel</button>
+               <button style="width:130px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAbortarPartida" title="Abort the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-trash">icon</span>Abort</button>
+               <button style="width:120px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btOfrecerTablas" title="Ofert draw" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-grip-solid-horizontal">icon</span>Draw</button>
             </div>
          </div>
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px; float:left;">
@@ -182,11 +202,11 @@
       </div>
 
 
-      <button id="Unirse" type="button">Unirse</button>
+      <!---<button id="Unirse" type="button">Unirse</button>
       <input type="number" id="NumeroSala" min="1" max="10" />
       <label id="Mensaje" style="margin-top:16px; margin-left:32px; font-size:20px; font-family:Verdana,Arial,Helvetica,sans-serif; font-weight:bold;">Mensaje</label>
       <button id="Enviar" type="button">Enviar</button>
       <input type="text" id="TextoEnviado" min="1" max="10" />
-      <label id="MensajeChat" style="margin-top:16px; margin-left:32px; font-size:20px; font-family:Verdana,Arial,Helvetica,sans-serif; font-weight:bold;">Mensaje de chat</label>
+      <label id="MensajeChat" style="margin-top:16px; margin-left:32px; font-size:20px; font-family:Verdana,Arial,Helvetica,sans-serif; font-weight:bold;">Mensaje de chat</label>--->
    </body>
 </html>

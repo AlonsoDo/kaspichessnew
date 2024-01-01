@@ -23,6 +23,16 @@ io.on('connection', function(socket){
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
 
+   socket.on('SendPos',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      socket.broadcast.to(data.PlayRoom).emit('SendPosBack',data);
+   });
+   
+   socket.on('SetValues',function(data){
+      console.log(data.Color)
+      socket.broadcast.to(data.Room).emit('SetValuesBack',data);
+   });
+   
    socket.on('AceptarReto',function(data){
       console.log('AceptarReto')
       console.log(socket.id)
@@ -34,8 +44,8 @@ io.on('connection', function(socket){
          if (aRetos[i].MyName == data.OpName){
             OpSocketId = aRetos[i].SocketId;
             io.sockets.sockets.get(OpSocketId).join(data.Room);
-            console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)
-            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName});
+            console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)            
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room});
             break;
          }
       }
@@ -83,6 +93,6 @@ io.on('connection', function(socket){
 
 })
 
-http.listen(3000, function(){
+http.listen(process.env.PORT || 3000, function(){
    console.log('listening on localhost:3000');
 });

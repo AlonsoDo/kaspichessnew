@@ -1,6 +1,6 @@
 {
   "name": "kaspichessnew",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Play Chess By Internet With Real People",
   "main": "index.html",
   "keywords": [
@@ -13,7 +13,7 @@
     "Club",
     "Virtual"
   ],
-  "author": "ApoloSoft",
+  "author": "Alonso Dominguez",
   "license": "Free",
   "dependencies": {
     "express": "^4.18.2",

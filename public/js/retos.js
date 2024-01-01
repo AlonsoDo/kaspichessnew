@@ -1,3 +1,5 @@
+var MiTurno;
+
 function IniGridRetos(){
 
     $("#GridRetos").jqGrid({
@@ -13,7 +15,11 @@ function IniGridRetos(){
         onSelectRow:function(id){
             var Player = $(this).jqGrid('getCell',id,'Player');
             // id = Room
-            AceptarReto(Player,id);
+            if (Player!=MyName){
+                AceptarReto(Player,id);
+            }else{
+                $(this).find('.ui-state-highlight').css('background','#80BFFF');
+            }            
         }
     });
       
@@ -30,4 +36,49 @@ function CancelarRetoBack(data){
 function AceptarRetoBack(data){
     $('#ContenedorRetos').hide();
     $('#ContenedorTablero').show();
+    $('#btCancelarReto').hide();
+    $('#btAbortarPartida').show();
+    $('#btCrearReto').hide();
+    
+    if (MyName == data.MyName){
+        PlayRoom = data.Room;
+        var ColorSide = SortearColor();
+        if (ColorSide == 'Blancas'){
+            alert('Blancas')
+            MiTurno = true;
+            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas'});            
+        }else{
+            alert('Negras')
+            MiTurno = false;
+            board1.flip();
+            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras'});
+        }
+        $('#lbNombreJugador').text(data.MyName);
+        $('#lbNombreOponente').text(data.OpName);
+    }
+}
+
+function SortearColor(){
+    var Cont = Math.floor(Math.random()*2);
+    if (Cont == 0){
+        return 'Blancas';
+    }else{
+        return 'Negras';
+    }
+}
+
+function SetValuesBack(data){
+    $('#btCancelarReto').hide();
+    $('#btCrearReto').hide();
+    $('#btAbortarPartida').show();
+    alert(data.Room)
+    PlayRoom = data.Room;
+    if(data.Color == 'Blancas'){
+        board1.flip();
+        MiTurno = false;
+    }else{
+        MiTurno = true;
+    }
+    $('#lbNombreJugador').text(data.OpName);
+    $('#lbNombreOponente').text(data.MyName);
 }
