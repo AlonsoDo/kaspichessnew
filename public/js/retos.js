@@ -44,11 +44,13 @@ function AceptarRetoBack(data){
         PlayRoom = data.Room;
         var ColorSide = SortearColor();
         if (ColorSide == 'Blancas'){
-            alert('Blancas')
+            StartTimer('Abajo');
+            $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
             MiTurno = true;
             socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas'});            
-        }else{
-            alert('Negras')
+        }else{ 
+            StartTimer('Arriba');
+            $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));           
             MiTurno = false;
             board1.flip();
             socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras'});
@@ -71,13 +73,17 @@ function SetValuesBack(data){
     $('#btCancelarReto').hide();
     $('#btCrearReto').hide();
     $('#btAbortarPartida').show();
-    alert(data.Room)
+    
     PlayRoom = data.Room;
     if(data.Color == 'Blancas'){
         board1.flip();
         MiTurno = false;
+        StartTimer('Arriba');
+        $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));
     }else{
         MiTurno = true;
+        StartTimer('Abajo');
+        $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
     }
     $('#lbNombreJugador').text(data.OpName);
     $('#lbNombreOponente').text(data.MyName);

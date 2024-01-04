@@ -1,6 +1,6 @@
 {
   "name": "kaspichessnew",
-  "version": "0.0.3",
+  "version": "0.1.3",
   "description": "Play Chess By Internet With Real People",
   "main": "index.html",
   "keywords": [
@@ -17,6 +17,7 @@
   "license": "Free",
   "dependencies": {
     "express": "^4.18.2",
+    "serve-favicon": "^2.5.0",
     "socket.io": "^4.7.2"
   },
   "engines": {
