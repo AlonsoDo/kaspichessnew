@@ -3,6 +3,16 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var favicon = require('serve-favicon');
+var mysql = require('mysql2');
+
+var pool  = mysql.createPool({
+  host     : 'us-cdbr-iron-east-04.cleardb.net',
+  user     : 'b52e988cd6806f',
+  password : '26576328',
+  database : 'heroku_9e1ea27dfb893a5',
+  port: '3306',
+  connectionLimit : 10
+});
 
 app.use(express.static(__dirname + '/public'));
 app.use(favicon(__dirname + '/public/favicon.ico'));
@@ -25,6 +35,51 @@ io.on('connection', function(socket){
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
 
+   socket.on('TryToLogin',function(data){
+      console.log('TryToLogin')
+      console.log(data)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.MyName+"' AND PassWord='"+data.PassWord+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);
+         // No encuentra al jugador
+         if (rows.length==0){
+            io.to(socket.id).emit('LoginBack',{Error:true});
+         }else{
+            io.to(socket.id).emit('LoginBack',{Error:false,Elo:rows[0].Elo});
+         }                        
+         connection.release();        
+         });
+      });
+
+   });
+
+   socket.on('CreateNewAcount',function(data){
+      console.log('CreateNewAcount')
+      console.log(data)
+      
+      var date1 = new Date();
+      //YYYY-MM-DD format
+      var mysqlDate = date1.toISOString().split("T")[0];
+
+      pool.getConnection(function(err,connection){      
+         connection.query("INSERT INTO autentificacion(User,PassWord,Email,DateSignUp) VALUES ('"+data.MyName+"','"+data.PassWord+"','"+data.Email+"','"+mysqlDate+"')",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           io.to(socket.id).emit('CreateNewAcountBack',{Error:true});
+           throw err;
+         } 
+         io.to(socket.id).emit('CreateNewAcountBack',{Error:false});
+         connection.release();        
+         });
+      });
+
+   });   
+   
    socket.on('SendPos',function(data){
       console.log('Play Room: ' + data.PlayRoom)
       //Send this event to everyone in the room excect the sender.

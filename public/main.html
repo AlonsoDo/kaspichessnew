@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="description" content="a new room to play live chess">	
+        <meta name="keywords" content="Play by internet,Online,Real adversaries,live,chess,multiplayer,new,room,to play chess,fun chess,club">
+        <title>KaspiChess</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <script src="js/jquery-ui.js"></script>
+        <link rel="stylesheet" href="css/jquery-ui.css">
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                
+                var socket = io();
+
+                $('#btLogin').button();
+                $('#btPlayAsGuest').button();
+
+                $('#DialogMessage').dialog({
+                    autoOpen:false,
+                    modal: true,
+                    buttons: {
+                        Ok: function() {
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+                
+                $('#DialogCreateAcount').dialog({
+                    autoOpen:false,
+                    height:554,
+			        width:550,			
+                    modal: true,
+                    buttons: {
+                        'Create new acount': function() {
+                            // Si no hay error
+                            if (CreateNewAcount()){
+                                $(this).dialog('close');
+                                $('#NickName').val($('#Nick').val());
+                                $('#Password').val($('#PassWord1').val());
+                            }                           
+                        }, 
+                        Cancel: function() {
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+                
+                $('#btPlayAsGuest').on('click',function(){
+                    window.location = 'http://localhost:3000/index.html?name=Guest&pass=1234';
+                });
+                
+                $('#btLogin').on('click',function(){
+                    socket.emit('TryToLogin',{MyName:$('#NickName').val(),PassWord:$('#Password').val()})
+                });
+
+                socket.on('LoginBack',function(data){
+                    if (data.Error){
+                        $('#Message').text('Error trying to login. NickName o PassWord inconrect.')
+                        $('#DialogMessage').dialog('open');
+                    }else{
+                        window.location = 'http://localhost:3000/index.html?name='+$('#NickName').val()+'&rating='+data.Elo;
+                    }                    
+                });
+
+                $('#SignUp').on('click',function(){
+                    $('#DialogCreateAcount').dialog('open');
+                });
+                
+                $('#LinkSCC').on('click',function(){
+                    window.open('http://sharechessclub.com/','_blank');
+                });
+
+                function CreateNewAcount(){
+                    var Result = true;
+                    
+                    if ($('#Nick').val() == ''){
+                        $('#Message2').text('The NickName is empty.')
+                        $('#Message2').css({'background-color':'yellow'});
+                        return false; 
+                    }
+
+                    if ($('#Email').val() == ''){
+                        $('#Message2').text('The Email is empty.')
+                        $('#Message2').css({'background-color':'yellow'});
+                        return false; 
+                    }
+
+                    if ($('#PassWord1').val() == ''){
+                        $('#Message2').text('The PassWord is empty.')
+                        $('#Message2').css({'background-color':'yellow'});
+                        return false; 
+                    }
+
+                    if ($('#PassWord2').val() == ''){
+                        $('#Message2').text('The repeat PassWord is empty.')
+                        $('#Message2').css({'background-color':'yellow'});
+                        return false; 
+                    }
+
+                    if ($('#PassWord1').val() != $('#PassWord2').val()){
+                        $('#Message2').text('The two PassWords must be the same.')
+                        $('#Message2').css({'background-color':'yellow'});
+                        return false; 
+                    }
+
+                    socket.emit('CreateNewAcount',{MyName:$('#Nick').val(),PassWord:$('#PassWord1').val(),Email:$('#Email').val()})
+
+                    return Result;
+                }
+
+            });
+        </script>
+    </head>
+    <body>
+        <div style="background-color:#daa351; position:absolute; top:50%; left:50%; width:400px; margin-left:-200px; height:500px; margin-top:-250px; border:0px;">
+            <label style="color:#f7f5f4; margin-left:24px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:30px;">Welcome to KaspiChess</label>								
+            <div style="margin-top:60px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Log into your account</div>
+            <div style="margin-top:30px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">NickName</div>
+            <input type="text" id="NickName" maxlength="20" placeholder="Type NickName" value="" style="margin-top:12px; margin-left:54px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;">
+            <div style="margin-top:30px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">PassWord</div>
+            <input type="password" id="Password" maxlength="20" placeholder="Type PassWord" value="" style="margin-top:12px; margin-left:54px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;">
+            <div id='ForgotPass' style="margin-top:20px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;"><a href="#">Forgot your Password?</a></div>
+	        <button id="btLogin" class="button" style="font-size:22px; margin-top:20px; margin-left:54px;">LogIn</button>
+            <button id="btPlayAsGuest" class="button" style="font-size:22px; margin-top:20px; margin-left:11px;">Play as Guest</button>
+            <div style="float:left; margin-top:20px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;">New to KaspiChess?</div>
+	        <div id="SignUp" style="float:left; margin-top:20px; margin-left:14px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;"><a href="#">Sign Up</a></div>
+	        <div id="LinkSCC" style="float:left; margin-top:50px; margin-left:14px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;"><a href="#">Try ShareChessClub!</a></div>
+        </div>
+        <div id="DialogMessage" title="Information">
+            <p id="Message">Hola</p>
+        </div>
+        <div id="DialogCreateAcount" title="Create new player">
+            <div style="background-color:#daa351; border:1px #daa351 solid; width:500px; height:400px; margin:0 auto 0 auto;">
+                <label id="Message2" style="color:black; margin-left:24px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">All form fields are required.</label>								
+                <div style="margin-top:50px; margin-left:24px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">NickName</div>
+                <input type="text" id="Nick" maxlength="20" placeholder="Type NickName" style="margin-top:12px; margin-left:24px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;"/>
+                <div style="margin-top:20px; margin-left:24px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Email</div>
+                <input type="text" id="Email" maxlength="50" placeholder="Type eMail" style="margin-top:12px; margin-left:24px; width:400px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;"/>
+                <div style="margin-top:20px; margin-left:24px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">PassWord</div>
+                <input type="password" id="PassWord1" maxlength="20" placeholder="Type Password" style="margin-top:12px; margin-left:24px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;"/>
+                <div style="margin-top:20px; margin-left:24px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Repeat PassWord</div>
+                <input type="password" id="PassWord2" maxlength="20" placeholder="Repeat Password" style="margin-top:12px; margin-left:24px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;"/>
+            </div>    
+        </div>
+    </body>
+</html>

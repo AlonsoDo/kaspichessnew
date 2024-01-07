@@ -48,6 +48,8 @@
          var board1;
          var Room;
          var MyName;
+         var MyElo;
+         var PassWord;
          var MySocketId;
          var RoomReto;
          var PlayRoom;
@@ -56,7 +58,17 @@
 
             socket = io();
 
-            MyName = 'Player' + Math.floor(Math.random()*10000);
+            var url_string = window.location.href; 
+            var url = new URL(url_string);
+            var name = url.searchParams.get('name');
+            var rating = url.searchParams.get('rating')
+            
+            if (name == 'Guest'){
+               MyName = 'Player' + Math.floor(Math.random()*10000);
+            }else{
+               MyName = name;
+               MyElo = rating;                              
+            }
             $('#lbJugadorConectado').text(MyName);
 
             // Posicion inicial
