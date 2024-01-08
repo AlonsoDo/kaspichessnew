@@ -36,9 +36,7 @@
                         'Create new acount': function() {
                             // Si no hay error
                             if (CreateNewAcount()){
-                                $(this).dialog('close');
-                                $('#NickName').val($('#Nick').val());
-                                $('#Password').val($('#PassWord1').val());
+                                socket.emit('CheckPlayer',{MyName:$('#Nick').val()})                                
                             }                           
                         }, 
                         Cancel: function() {
@@ -46,6 +44,19 @@
                         }
                     }
                 });
+
+                socket.on('CheckPlayerBack',function(data){
+                    if (data.found){
+                        $('#Message2').text('This NickName is busy!!!.');
+                        $('#Message2').css({'background-color':'yellow'});
+                    }else{
+                        $('#DialogCreateAcount').dialog('close');
+                        $('#NickName').val($('#Nick').val());
+                        $('#Password').val($('#PassWord1').val());
+                        socket.emit('CreateNewAcount',{MyName:$('#Nick').val(),PassWord:$('#PassWord1').val(),Email:$('#Email').val()})
+                    }
+                });
+
                 
                 $('#btPlayAsGuest').on('click',function(){
                     window.location = 'http://localhost:3000/index.html?name=Guest&pass=1234';
@@ -64,6 +75,14 @@
                     }                    
                 });
 
+                socket.on('CreateNewAcountBack',function(data){
+                    //Si error
+                    if (data.Error){
+                        $('#Message').text('Server error.')
+                        $('#DialogMessage').dialog('open');
+                    }
+                });    
+
                 $('#SignUp').on('click',function(){
                     $('#DialogCreateAcount').dialog('open');
                 });
@@ -76,7 +95,7 @@
                     var Result = true;
                     
                     if ($('#Nick').val() == ''){
-                        $('#Message2').text('The NickName is empty.')
+                        $('#Message2').text('The NickName is empty.');
                         $('#Message2').css({'background-color':'yellow'});
                         return false; 
                     }
@@ -103,10 +122,8 @@
                         $('#Message2').text('The two PassWords must be the same.')
                         $('#Message2').css({'background-color':'yellow'});
                         return false; 
-                    }
-
-                    socket.emit('CreateNewAcount',{MyName:$('#Nick').val(),PassWord:$('#PassWord1').val(),Email:$('#Email').val()})
-
+                    }                    
+                    
                     return Result;
                 }
 

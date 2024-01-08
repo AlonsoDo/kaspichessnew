@@ -58,6 +58,29 @@ io.on('connection', function(socket){
 
    });
 
+   socket.on('CheckPlayer',function(data){
+      console.log('CheckPlayer')
+      console.log(data)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.MyName+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);
+         // No encuentra al jugador
+         if (rows.length==0){
+            io.to(socket.id).emit('CheckPlayerBack',{found:false});
+         }else{
+            io.to(socket.id).emit('CheckPlayerBack',{found:true});
+         }                        
+         connection.release();        
+         });
+      });
+
+   });
+
    socket.on('CreateNewAcount',function(data){
       console.log('CreateNewAcount')
       console.log(data)
