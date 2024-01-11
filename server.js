@@ -136,9 +136,9 @@ io.on('connection', function(socket){
    socket.on('CrearReto',function(data){
       console.log('Crear reto');
       var MyName = data.MyName;
-      io.emit('CrearRetoBack',{MyName:MyName,Room:nContRooms});
+      io.emit('CrearRetoBack',{MyName:MyName,Room:nContRooms,MyElo:data.MyElo,Color:data.Color});
       console.log(socket.id)
-      aRetos.push({MyName:MyName,Room:nContRooms,SocketId:socket.id})
+      aRetos.push({MyName:MyName,Room:nContRooms,SocketId:socket.id,MyElo:data.MyElo,Color:data.Color})
       nContRooms++;
    }); 
    

@@ -5,7 +5,8 @@ function IniGridRetos(){
     $("#GridRetos").jqGrid({
         datatype:'local',
         colModel:[            
-            { label: 'Room', name: 'Room', width: 66, key: true},
+            { label: 'Room', name: 'Room', width: 66, key: true, hidden: true},
+            { label: 'Color', name: 'Color', width: 66, align: 'center'},
             { label: 'Player', name: 'Player', width: 234},            
             { label: 'Rating', name: 'Rating', width: 60},
             { label: 'Time', name: 'Time', width: 66},
