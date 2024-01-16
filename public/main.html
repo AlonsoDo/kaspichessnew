@@ -96,7 +96,7 @@
             
             socket.on('CrearRetoBack',function(data){
                RoomReto = data.Room;
-               jQuery("#GridRetos").jqGrid('addRowData',RoomReto,{Room:RoomReto,Color:data.Color,Player:data.MyName,Rating:data.MyElo,Time:'--/--',Manner:'Unrated'});
+               jQuery("#GridRetos").jqGrid('addRowData',RoomReto,{Room:RoomReto,Color:data.Color,Player:data.MyName,Rating:data.MyElo,Time:data.Minutes+'/'+data.Seconds,Manner:data.Rated,Min:data.Min,Max:data.Max});
             });   
 
             $('#btCrearReto').button();
@@ -162,7 +162,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.3.3 by Alonso Dominguez (c) 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.3.4 by Alonso Dominguez (c) 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -243,9 +243,9 @@
                </div>
             </div>
             <div style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px coral solid; width:525px; height:64px;">
-               <button style="width:180px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCrearReto" title="Create new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-plus">icon</span>Create Game</button>
+               <button style="width:180px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCrearReto" title="Create new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-addon">icon</span>Create Game</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCancelarReto" title="Cancel new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-close">icon</span>Cancel</button>
-               <button style="width:130px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAbortarPartida" title="Abort the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-trash">icon</span>Abort</button>
+               <button style="width:130px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAbortarPartida" title="Abort the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-trash-b">icon</span>Abort</button>
                <button style="width:120px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btOfrecerTablas" title="Ofert draw" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-grip-solid-horizontal">icon</span>Draw</button>
             </div>
          </div>

@@ -29,7 +29,12 @@ function IniDialogNewGame(){
             'Create new game': function() {
                 if (CreateNewGame()){
                   var Color = $('#SelectColor').val();
-                  socket.emit('CrearReto',{MyName:MyName,MyElo:MyElo,Color:Color})
+                  var Minutes = $('#Minutes').val();
+                  var Seconds = $('#Seconds').val();
+                  var Rated = $('#SelectRated').val();
+                  var Min = $('#MinRating').val();
+                  var Max = $('#MaxRating').val();
+                  socket.emit('CrearReto',{MyName:MyName,MyElo:MyElo,Color:Color,Minutes:Minutes,Seconds:Seconds,Rated:Rated,Min:Min,Max:Max})
                   $('#btCancelarReto').show();
                   $('#btCrearReto').hide();
                   $(this).dialog('close');

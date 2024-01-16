@@ -6,10 +6,10 @@ var favicon = require('serve-favicon');
 var mysql = require('mysql2');
 
 var pool  = mysql.createPool({
-  host     : 'us-cdbr-iron-east-04.cleardb.net',
-  user     : 'b52e988cd6806f',
-  password : '26576328',
-  database : 'heroku_9e1ea27dfb893a5',
+  host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+  user     : 'fzeh0bd62uerjm8m',
+  password : 'aqrgaujeb7mb****',
+  database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
 });
@@ -116,7 +116,7 @@ io.on('connection', function(socket){
    
    socket.on('AceptarReto',function(data){
       console.log('AceptarReto')
-      console.log(socket.id)
+      //console.log(socket.id)
       // Join to Room
       socket.join(data.Room);
       // Join Oponent to room (data.OpName)
@@ -124,9 +124,11 @@ io.on('connection', function(socket){
       for (var i = 0; i < aRetos.length; i++){
          if (aRetos[i].MyName == data.OpName){
             OpSocketId = aRetos[i].SocketId;
+            console.log(OpSocketId)
+            console.log(data.Room)
             io.sockets.sockets.get(OpSocketId).join(data.Room);
             console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)            
-            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room});
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes});
             break;
          }
       }
@@ -136,9 +138,9 @@ io.on('connection', function(socket){
    socket.on('CrearReto',function(data){
       console.log('Crear reto');
       var MyName = data.MyName;
-      io.emit('CrearRetoBack',{MyName:MyName,Room:nContRooms,MyElo:data.MyElo,Color:data.Color});
+      io.emit('CrearRetoBack',{MyName:MyName,Room:nContRooms,MyElo:data.MyElo,Color:data.Color,Minutes:data.Minutes,Seconds:data.Seconds,Rated:data.Rated,Min:data.Min,Max:data.Max});
       console.log(socket.id)
-      aRetos.push({MyName:MyName,Room:nContRooms,SocketId:socket.id,MyElo:data.MyElo,Color:data.Color})
+      aRetos.push({MyName:MyName,Room:nContRooms,SocketId:socket.id,MyElo:data.MyElo,Color:data.Color,Minutes:data.Minutes,Seconds:data.Seconds,Rated:data.Rated,Min:data.Min,Max:data.Max})
       nContRooms++;
    }); 
    
@@ -149,21 +151,14 @@ io.on('connection', function(socket){
       for (var i = 0; i < aRetos.length; i++){
          if (aRetos[i].MyName == data.MyName){            
             bRoom = aRetos[i].Room;
+            // Quitar
             aRetos.splice(i,1);
             break;
          }
       }
       io.emit('CancelarRetoBack',{Room:bRoom});
    });
-
-   /*socket.on('CambioSala',function(data){
-      console.log('Sala anterior: ' + data.SalaAnte);
-      socket.leave('Room' + data.SalaAnte)
-      console.log('Sala nueva: ' + data.SalaNueva);
-      socket.join('Room' + data.SalaNueva);
-      //Room = data.SalaNueva;
-   });*/
-
+   
    socket.on('SendMensageGeneralChat',function(data){
       console.log(data);
       //Send this event to everyone in the general room = 1.
@@ -171,7 +166,23 @@ io.on('connection', function(socket){
       
       //Send this event to everyone in the room excect the sender.
       //socket.broadcast.to('Room' + Room).emit('EnviarChatBack',data);
-   });   
+   });
+   
+   socket.on('disconnect', (reason) => {
+      console.log('disconnect')
+      console.log(socket.id)
+      // Buscar si tiene reto
+      var bRoom;
+      for (var i = 0; i < aRetos.length; i++){
+         if (aRetos[i].SocketId == socket.id){            
+            bRoom = aRetos[i].Room;
+            // Quitar
+            aRetos.splice(i,1);
+            break;
+         }
+      }
+      io.emit('CancelarRetoBack',{Room:bRoom});
+    });
 
 })
 
