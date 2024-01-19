@@ -38,6 +38,8 @@ function CancelarRetoBack(data){
 }
 
 function AceptarRetoBack(data){
+    var ColorSide;
+    
     $('#ContenedorRetos').hide();
     $('#ContenedorTablero').show();
     $('#btCancelarReto').hide();
@@ -48,8 +50,17 @@ function AceptarRetoBack(data){
         TiempoPartida = data.Minutes * 60000;
         TiempoRestanteArriba = TiempoPartida;
         TiempoRestanteAbajo = TiempoPartida;
-        PlayRoom = data.Room;
-        var ColorSide = SortearColor();
+        SegundosIncremento = data.Seconds * 1000;
+        PlayRoom = data.Room;        
+        
+        if (data.Color == 'Random'){
+            ColorSide = SortearColor();
+        }else if (data.Color == 'White'){
+            ColorSide = 'Negras';
+        }else if (data.Color == 'Black'){
+            ColorSide = 'Blancas';
+        }
+        
         if (ColorSide == 'Blancas'){
             $('#lbRatingOponente').text(data.MyElo);
             $('#lbRatingJugador').text(MyElo);
@@ -57,7 +68,7 @@ function AceptarRetoBack(data){
             $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
             $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));
             MiTurno = true;            
-            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes});            
+            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});            
         }else{ 
             $('#lbRatingOponente').text(data.MyElo);
             $('#lbRatingJugador').text(MyElo);
@@ -66,7 +77,7 @@ function AceptarRetoBack(data){
             $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));           
             MiTurno = false;
             board1.flip();
-            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes});
+            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});
         }
         $('#lbNombreJugador').text(data.MyName);
         $('#lbNombreOponente').text(data.OpName);
@@ -95,6 +106,7 @@ function SetValuesBack(data){
     TiempoPartida = data.Minutes * 60000;
     TiempoRestanteArriba = TiempoPartida;
     TiempoRestanteAbajo = TiempoPartida;
+    SegundosIncremento = data.Seconds * 1000;
     if(data.Color == 'Blancas'){
         $('#lbRatingOponente').text(data.MyElo);
         $('#lbRatingJugador').text(MyElo);
@@ -115,4 +127,12 @@ function SetValuesBack(data){
     $('#lbNombreOponente').text(data.MyName);
     $('#lbResultadoOponente').text('');
     $('#lbResultadoJugador').text('');
+}
+
+function ActualizarRetos(data){
+    console.log(data)
+    for (var i = 0; i < data.aRetos.length; i++){
+        var RoomReto = data.aRetos[i].Room;        
+        jQuery("#GridRetos").jqGrid('addRowData',RoomReto,{Room:RoomReto,Color:data.aRetos[i].Color,Player:data.aRetos[i].MyName,Rating:data.aRetos[i].MyElo,Time:data.aRetos[i].Minutes+'/'+data.aRetos[i].Seconds,Manner:data.aRetos[i].Rated,Min:data.aRetos[i].Min,Max:data.aRetos[i].Max});
+    }
 }

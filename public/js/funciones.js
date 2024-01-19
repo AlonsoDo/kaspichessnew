@@ -29,6 +29,7 @@ function IniDialogNewGame(){
             'Create new game': function() {
                 if (CreateNewGame()){
                   var Color = $('#SelectColor').val();
+                  //alert(Color) Ok
                   var Minutes = $('#Minutes').val();
                   var Seconds = $('#Seconds').val();
                   var Rated = $('#SelectRated').val();

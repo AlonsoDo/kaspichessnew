@@ -1,4 +1,5 @@
 function onDrop (source, target, piece, newPos, oldPos, orientation){
+    
     try {
         if (MiTurno){
             chess.move({ from:source, to:target, promotion:'q' });
@@ -8,6 +9,15 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
             StartTimer('Arriba');
             $('#btAbortarPartida').hide();
             $('#btOfrecerTablas').show();
+            
+            if (chess.isGameOver()){
+                StopTimer('Arriba');
+            }
+            
+            if (chess.isCheckmate()){
+                $('#ResultMessage').text('You have won the game by CheckMate')
+                $('#DialogMessage').dialog('open');    
+            }
         }        
     }catch (err) {
         return 'snapback';
@@ -19,13 +29,23 @@ function onSnapEnd(){
 }
 
 function SendPosBack(data){
+    
     chess.move({ from:data.source,to:data.target,promotion:data.promotion});
     board1.position(chess.fen());
     MiTurno = true; 
     StopTimer('Arriba');
     TiempoRestanteArriba = data.TiempoRestanteAbajo;
     $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba));
-    StartTimer('Abajo');   
+    StartTimer('Abajo');  
+    
+    if (chess.isGameOver()){
+        StopTimer('Abajo');
+    }
+    
+    if (chess.isCheckmate()){
+        $('#ResultMessage').text('You have lost the game by CheckMate')
+        $('#DialogMessage').dialog('open');    
+    }
 }
 
 var TiempoPartida = 300000;
@@ -62,7 +82,10 @@ function UpdateTimer(Posicion) {
     }else{
         $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo - ValorTiempoTranscurrido));        
         if((TiempoRestanteAbajo - ValorTiempoTranscurrido)<=0){
+            socket.emit('LostByTime',{PlayRoom:PlayRoom});
             StopTimer('Abajo')
+            $('#btOfrecerTablas').hide();
+            MiTurno = false;
             $('#lbRelojJugador').text('00:00:00');
             $('#ResultMessage').text('You have lost the game by time')
             $('#DialogMessage').dialog('open');            
@@ -87,11 +110,11 @@ function StopTimer(Posicion) {
     
     if (Posicion=='Arriba') {
         TiempoRestanteArriba = TiempoRestanteArriba - ValorTiempoTranscurrido;
-        TiempoRestanteArriba = TiempoRestanteArriba + parseInt(SegundosIncremento*1000);
+        TiempoRestanteArriba = TiempoRestanteArriba + parseInt(SegundosIncremento);
         $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba));                
     }else{
         TiempoRestanteAbajo = TiempoRestanteAbajo - ValorTiempoTranscurrido;
-        TiempoRestanteAbajo = TiempoRestanteAbajo + parseInt(SegundosIncremento*1000);
+        TiempoRestanteAbajo = TiempoRestanteAbajo + parseInt(SegundosIncremento);
         $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo));                
     }    
     
@@ -119,4 +142,10 @@ function FormatearMilisegundos(Milisegundos){
 	return hora + ":" + minuto + ":" + segundo;
     }
         
+}
+
+function WinByTime(data){
+    $('#btOfrecerTablas').hide();
+    $('#ResultMessage').text('You have won the game by time')
+    $('#DialogMessage').dialog('open'); 
 }

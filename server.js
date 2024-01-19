@@ -8,7 +8,7 @@ var mysql = require('mysql2');
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb****',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -31,6 +31,8 @@ io.on('connection', function(socket){
    console.log(socket.id)
 
    socket.emit('EnviarSocketId',{SocketId:socket.id});
+
+   socket.emit('ActualizarRetos',{aRetos:aRetos});
 
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
@@ -108,6 +110,12 @@ io.on('connection', function(socket){
       //Send this event to everyone in the room excect the sender.
       socket.broadcast.to(data.PlayRoom).emit('SendPosBack',data);
    });
+
+   socket.on('LostByTime',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      //Send this event to everyone in the room excect the sender.
+      socket.broadcast.to(data.PlayRoom).emit('WinByTime',data);
+   });
    
    socket.on('SetValues',function(data){
       console.log(data.Color)
@@ -116,6 +124,7 @@ io.on('connection', function(socket){
    
    socket.on('AceptarReto',function(data){
       console.log('AceptarReto')
+      //console.log('Color: ' + data.Color)
       //console.log(socket.id)
       // Join to Room
       socket.join(data.Room);
@@ -128,7 +137,7 @@ io.on('connection', function(socket){
             console.log(data.Room)
             io.sockets.sockets.get(OpSocketId).join(data.Room);
             console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)            
-            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes});
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes,Seconds:aRetos[i].Seconds,Color:aRetos[i].Color});
             break;
          }
       }
