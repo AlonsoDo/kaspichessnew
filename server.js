@@ -8,7 +8,7 @@ var mysql = require('mysql2');
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -115,6 +115,12 @@ io.on('connection', function(socket){
       console.log('Play Room: ' + data.PlayRoom)
       //Send this event to everyone in the room excect the sender.
       socket.broadcast.to(data.PlayRoom).emit('WinByTime',data);
+   });
+
+   socket.on('LostByResign',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      //Send this event to everyone in the room excect the sender.
+      socket.broadcast.to(data.PlayRoom).emit('WinByResign',data);
    });
    
    socket.on('SetValues',function(data){

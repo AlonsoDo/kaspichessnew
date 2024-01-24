@@ -63,6 +63,7 @@ function AceptarRetoBack(data){
         
         if (ColorSide == 'Blancas'){
             $('#lbRatingOponente').text(data.MyElo);
+            OpElo = data.MyElo;
             $('#lbRatingJugador').text(MyElo);
             StartTimer('Abajo');
             $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
@@ -71,6 +72,7 @@ function AceptarRetoBack(data){
             socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});            
         }else{ 
             $('#lbRatingOponente').text(data.MyElo);
+            OpElo = data.MyElo;
             $('#lbRatingJugador').text(MyElo);
             StartTimer('Arriba');
             $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
@@ -109,6 +111,7 @@ function SetValuesBack(data){
     SegundosIncremento = data.Seconds * 1000;
     if(data.Color == 'Blancas'){
         $('#lbRatingOponente').text(data.MyElo);
+        OpElo = data.MyElo;
         $('#lbRatingJugador').text(MyElo);
         board1.flip();
         MiTurno = false;
@@ -117,6 +120,7 @@ function SetValuesBack(data){
         $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));
     }else{
         $('#lbRatingOponente').text(data.MyElo);
+        OpElo = data.MyElo;
         $('#lbRatingJugador').text(MyElo);
         MiTurno = true;
         StartTimer('Abajo');
