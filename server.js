@@ -8,7 +8,7 @@ var mysql = require('mysql2');
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mbf9i6',
+  password : 'aqrgaujeb7mb',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
