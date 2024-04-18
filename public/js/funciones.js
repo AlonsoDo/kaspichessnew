@@ -18,6 +18,32 @@ function IniDialogMessage(){
     });
 }
 
+function IniDialogStats(){
+    $('#DialogStats').dialog({
+      autoOpen:false,  
+      modal: true,
+        buttons: {
+          Ok: function() {
+            $(this).dialog('close');
+          }
+        }
+    });
+}
+
+function ShowStats(data){
+	$('#DialogStats').dialog('open');
+	// No encuentra jugador
+	if (data.Error){
+		$('#ResultMessageStats').text('No stats for this player.');
+	}else{
+		$('#ResultMessageStats').text('Stats for this player.');
+		$('#StatsGames').text(data.Games);
+		$('#StatsWins').text(data.Wins);
+		$('#StatsLosts').text(data.Losts);
+		$('#StatsDraws').text(data.Draws);
+	}
+}
+
 function IniDialogNewGame(){
 
   $('#DialogNewGame').dialog({

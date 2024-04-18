@@ -60,6 +60,28 @@ io.on('connection', function(socket){
 
    });
 
+   socket.on('Stats',function(data){
+      console.log(data.PlayerName)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.PlayerName+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);
+         // No encuentra al jugador
+         if (rows.length==0){
+            io.to(socket.id).emit('StatsBack',{Error:true});
+         }else{
+            io.to(socket.id).emit('StatsBack',{Error:false,Games:rows[0].Games,Wins:rows[0].Wins,Losts:rows[0].Losts,Draws:rows[0].Draws});
+         }                        
+         connection.release();        
+         });
+      });
+
+   });
+
    socket.on('CheckPlayer',function(data){
       console.log('CheckPlayer')
       console.log(data)
@@ -197,7 +219,32 @@ io.on('connection', function(socket){
          }
       }
       io.emit('CancelarRetoBack',{Room:bRoom});
-    });
+   });
+
+   socket.on('LeaveRoom',function(data){
+      console.log('Leaving room: ' + data.PlayRoom);
+      socket.leave(data.PlayRoom);
+   });  
+   
+   socket.on('RetosActivos',function(data){
+      console.log('Enviando retos activos')
+      socket.emit('ActualizarRetos',{aRetos:aRetos});
+   });
+
+   socket.on('OfrecerTablas',function(data){
+      console.log('Ofreciendo tablas')
+      socket.broadcast.to(data.PlayRoom).emit('OfrecerTablasBack',data);
+   });
+
+   socket.on('AceptarTablas',function(data){
+      console.log('Aceptar tablas')
+      socket.broadcast.to(data.PlayRoom).emit('AceptarTablasBack',data);
+   });
+
+   socket.on('DeclinarTablas',function(data){
+      console.log('Declinar tablas')
+      socket.broadcast.to(data.PlayRoom).emit('DeclinarTablasBack',data);
+   });
 
 })
 

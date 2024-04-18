@@ -1,3 +1,5 @@
+var OfreciendoTablas = false;
+
 function onDrop (source, target, piece, newPos, oldPos, orientation){
     
     try {
@@ -10,12 +12,22 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
             $('#btAbortarPartida').hide();
             $('#btOfrecerTablas').show();
             $('#btResign').show();
+            $('#DeclinarTablas').hide();
+
+            if (OfreciendoTablas){
+                OfreciendoTablas = false;
+                DeclinarTablas(); 
+            }
             
             if (chess.isGameOver()){
                 StopTimer('Arriba');
+                $('#btOfrecerTablas').hide();
+                $('#btResign').hide();
+                $('#btMain').show();
+                ResetBotones();
             }
             
-            if (chess.isCheckmate()){
+            if (chess.isCheckmate()){                
 
                 $('#lbResultadoJugador').text('1');
                 $('#lbResultadoOponente').text('0');
@@ -26,7 +38,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 MyElo = Math.round(MyElo);
                 OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
                 OpElo = Math.round(OpElo);                
-                $('#ResultMessage').text('You have won the game by CheckMate. You new rating is: ' + MyElo + ' (+' + VarElo + ')')
+                $('#ResultMessage').text('You have won the game by CheckMate. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
                 $('#DialogMessage').dialog('open'); 
 
             }else if (chess.isDraw()){
@@ -49,16 +61,16 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 }
 
                 if (chess.isInsufficientMaterial()){
-                    $('#ResultMessage').text('The game was draw by Insufficient Material. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+                    $('#ResultMessage').text('The game was draw by Insufficient Material. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
                     $('#DialogMessage').dialog('open');
                 }else if (chess.isStalemate()){
-                    $('#ResultMessage').text('The game was draw by Stalemate. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+                    $('#ResultMessage').text('The game was draw by Stalemate. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
                     $('#DialogMessage').dialog('open');
                 }else if (chess.isThreefoldRepetition()){
-                    $('#ResultMessage').text('The game was draw by Threefold Repetition. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+                    $('#ResultMessage').text('The game was draw by Threefold Repetition. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
                     $('#DialogMessage').dialog('open');
                 }else{
-                    $('#ResultMessage').text('The game was draw by 50-move rule. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+                    $('#ResultMessage').text('The game was draw by 50-move rule. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
                     $('#DialogMessage').dialog('open');
                 }
             }
@@ -84,6 +96,10 @@ function SendPosBack(data){
     
     if (chess.isGameOver()){
         StopTimer('Abajo');
+        $('#btOfrecerTablas').hide();
+        $('#btResign').hide();
+        $('#btMain').show();
+        ResetBotones();
     }
     
     if (chess.isCheckmate()){
@@ -97,7 +113,7 @@ function SendPosBack(data){
         MyElo = Math.round(MyElo);
         OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
         OpElo = Math.round(OpElo);                
-        $('#ResultMessage').text('You have lost the game by CheckMate. You new rating is: ' + MyElo + ' (' + VarElo + ')')
+        $('#ResultMessage').text('You have lost the game by CheckMate. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
         $('#DialogMessage').dialog('open');  
 
     }else if (chess.isDraw()){
@@ -120,16 +136,16 @@ function SendPosBack(data){
         }
         
         if (chess.isInsufficientMaterial()){
-            $('#ResultMessage').text('The game was draw by Insufficient Material. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#ResultMessage').text('The game was draw by Insufficient Material. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
             $('#DialogMessage').dialog('open');
         }else if (chess.isStalemate()){
-            $('#ResultMessage').text('The game was draw by Stalemate. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#ResultMessage').text('The game was draw by Stalemate. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
             $('#DialogMessage').dialog('open'); 
         }else if (chess.isThreefoldRepetition()){
-            $('#ResultMessage').text('The game was draw by Threefold Repetition. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#ResultMessage').text('The game was draw by Threefold Repetition. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
             $('#DialogMessage').dialog('open');           
         }else{
-            $('#ResultMessage').text('The game was draw by 50-move rule. You new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#ResultMessage').text('The game was draw by 50-move rule. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
             $('#DialogMessage').dialog('open');
         }
     }
@@ -174,6 +190,8 @@ function UpdateTimer(Posicion) {
             StopTimer('Abajo')
             $('#btOfrecerTablas').hide();
             $('#btResign').hide();
+            $('#btMain').show();
+            ResetBotones();
             $('#lbResultadoJugador').text('0');
             $('#lbResultadoOponente').text('1');
             MiTurno = false;
@@ -187,7 +205,7 @@ function UpdateTimer(Posicion) {
             OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
             OpElo = Math.round(OpElo);
 
-            $('#ResultMessage').text('You have lost the game by time. You new rating is: ' + MyElo + ' (' + VarElo + ')');
+            $('#ResultMessage').text('You have lost the game by time. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
             $('#DialogMessage').dialog('open');            
         }       
     }
@@ -247,6 +265,8 @@ function FormatearMilisegundos(Milisegundos){
 function WinByTime(data){
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
+    $('#btMain').show();
+    ResetBotones();
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -258,7 +278,7 @@ function WinByTime(data){
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
 
-    $('#ResultMessage').text('You have won the game by time. You new rating is: ' + MyElo + ' (+' + VarElo + ')');
+    $('#ResultMessage').text('You have won the game by time. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
     $('#DialogMessage').dialog('open'); 
 }
 
@@ -274,6 +294,8 @@ function LostByResign(){
 
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
+    $('#btMain').show();
+    ResetBotones();
     $('#lbResultadoJugador').text('0');
     $('#lbResultadoOponente').text('1');
 
@@ -285,7 +307,7 @@ function LostByResign(){
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
 
-    $('#ResultMessage').text('You have resigned the game. You new rating is: ' + MyElo + ' (' + VarElo + ')')
+    $('#ResultMessage').text('You have resigned the game. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
 
@@ -298,6 +320,8 @@ function WinByResign(data){
 
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
+    $('#btMain').show();
+    ResetBotones();
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -309,6 +333,124 @@ function WinByResign(data){
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
 
-    $('#ResultMessage').text('You have won the game by resign. You new rating is: ' + MyElo + ' (+' + VarElo + ')')
+    $('#ResultMessage').text('You have won the game by resign. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
     $('#DialogMessage').dialog('open');
+}
+
+function GoToMain(){
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});
+    //socket.emit('RetosActivos',{});
+
+    $('#ContenedorTablero').hide();
+    $('#ContenedorRetos').show();
+
+    $('#btMain').hide();
+    $('#btCrearReto').show();
+
+    chess.reset();
+    board1.position(chess.fen());
+    if (IsFliped){
+        board1.flip();
+        IsFliped = false;
+    }
+}
+
+function OfrecerTablas(){
+    $('#btOfrecerTablas').hide();
+    $('#OfrecerTablas').show();
+    socket.emit('OfrecerTablas',{PlayRoom:PlayRoom});
+}
+
+function OfrecerTablasBack(){
+    $('#btOfrecerTablas').hide();
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').show();
+    OfreciendoTablas = true;
+}
+
+function AceptarTablas(){
+    
+    $('#OfrecerTablas2').hide();
+    $('#btResign').hide();
+    $('#btMain').show();
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#lbResultadoJugador').text('1/2');
+    $('#lbResultadoOponente').text('1/2');
+    var Dif = MyElo - OpElo;
+    var Exig = CalcularExigencia(Dif);
+    var VarElo = (50 - Exig)/5;
+    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+    MyElo = Math.round(MyElo);
+    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+    OpElo = Math.round(OpElo);
+
+    var cVarElo;
+    if (VarElo >= 0){
+        cVarElo = '+' + VarElo;
+    }else{
+        cVarElo = VarElo;
+    }
+        
+    $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+    $('#DialogMessage').dialog('open');
+
+    socket.emit('AceptarTablas',{PlayRoom:PlayRoom});
+        
+}
+
+function AceptarTablasBack(data){
+
+    $('#OfrecerTablas').hide();
+    //$('#OfrecerTablas2').hide();
+    $('#btResign').hide();
+    $('#btMain').show();
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#lbResultadoJugador').text('1/2');
+    $('#lbResultadoOponente').text('1/2');
+    var Dif = MyElo - OpElo;
+    var Exig = CalcularExigencia(Dif);
+    var VarElo = (50 - Exig)/5;
+    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+    MyElo = Math.round(MyElo);
+    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+    OpElo = Math.round(OpElo);
+
+    var cVarElo;
+    if (VarElo >= 0){
+        cVarElo = '+' + VarElo;
+    }else{
+        cVarElo = VarElo;
+    }
+        
+    $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+    $('#DialogMessage').dialog('open');
+
+}
+
+function DeclinarTablas(){
+    $('#OfrecerTablas2').hide();
+    socket.emit('DeclinarTablas',{PlayRoom:PlayRoom});
+}
+
+function DeclinarTablasBack(){
+    $('#OfrecerTablas').hide();
+    $('#DeclinarTablas').show();
+}
+
+function ResetBotones(){
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').hide();
+    $('#DeclinarTablas').hide();
 }

@@ -116,11 +116,19 @@
             $('#btAbortarPartida').button();
             $('#btOfrecerTablas').button();
             $('#btResign').button();
+            $('#btMain').button();
+            $('#btAceptarTablas').button();
+            $('#btDeclinarTablas').button();
             $('#btAbortarPartida').hide();
             $('#btCancelarReto').hide();
             $('#btOfrecerTablas').hide();
+            $('#OfrecerTablas').hide();
+            $('#DeclinarTablas').hide();
             $('#btResign').hide();
-            $('#btSendMensageGeneralChat').button();
+            $('#btMain').hide();
+            $('#OfrecerTablas2').hide();
+            $('#btSendMensageGeneralChat').button(); 
+            $('#btStats').button();           
 
             $('#btSendMensageGeneralChat').on('click',function(){
                socket.emit('SendMensageGeneralChat',{PlayerName:MyName,ChatText:$('#TextMensageGeneralChat').val()});
@@ -148,7 +156,7 @@
             $('#Tabs').tabs();
 
             IniDialogMessage();
-            //$('#DialogMessage').dialog('close');
+            IniDialogStats();
             IniDialogNewGame();
 
             socket.on('ConnectToRoom',function(data){               
@@ -168,8 +176,46 @@
                WinByResign(data);              
             });
 
+            socket.on('OfrecerTablasBack',function(data){               
+               OfrecerTablasBack(data);              
+            });
+
+            socket.on('AceptarTablasBack',function(data){               
+               AceptarTablasBack(data);              
+            });
+
+            socket.on('DeclinarTablasBack',function(data){               
+               DeclinarTablasBack(data);              
+            });
+
             $('#btResign').on('click',function(){
                LostByResign();               
+            });
+
+            $('#btMain').on('click',function(){
+               GoToMain();               
+            });
+
+            $('#btOfrecerTablas').on('click',function(){
+               OfrecerTablas();               
+            });
+
+            $('#btAceptarTablas').on('click',function(){
+               AceptarTablas();               
+            });
+
+            $('#btDeclinarTablas').on('click',function(){
+               DeclinarTablas();               
+            });
+
+            $('#btStats').on('click',function(){
+               //alert('Ok')  
+               //$('#DialogStats').dialog('open'); 
+               socket.emit('Stats',{PlayerName:MyName})              
+            });
+
+            socket.on('StatsBack',function(data){               
+               ShowStats(data);              
             });
 
          });
@@ -180,7 +226,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.3.7 by Alonso Dominguez (c) 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.3.8 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -261,17 +307,51 @@
                </div>
             </div>
             <div style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px coral solid; width:525px; height:64px;">
-               <button style="width:180px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCrearReto" title="Create new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-addon">icon</span>Create Game</button>
+               <button style="width:180px; float:left; margin-top:10px; margin-left:0px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCrearReto" title="Create new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-addon">icon</span>Create Game</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btCancelarReto" title="Cancel new game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-close">icon</span>Cancel</button>
                <button style="width:130px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAbortarPartida" title="Abort the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-trash-b">icon</span>Abort</button>
-               <button style="width:120px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btOfrecerTablas" title="Ofert draw" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-grip-solid-horizontal">icon</span>Draw</button>
+               <button style="width:120px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btOfrecerTablas" title="Offer draw" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-grip-solid-horizontal">icon</span>Draw</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btResign" title="Resign the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-back">icon</span>Resign</button>
+               <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btMain" title="Go to main screen" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-home">icon</span>Main</button>
+               <div id="OfrecerTablas" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offering draw</label>								
+               </div>
+               <div id="OfrecerTablas2" style="margin-left:5px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:360px; height:50px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offering draw</label>								
+                  <button style="width:116px; float:left; margin-top:10px; margin-left:5px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAceptarTablas" title="Accept draw" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-check">icon</span>Accept</button>
+                  <button style="width:120px; float:left; margin-top:10px; margin-left:5px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btDeclinarTablas" title="Decline draw offer" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-forbidden">icon</span>Decline</button>
+               </div>
+               <div id="DeclinarTablas" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offer draw decline</label>								
+               </div>
             </div>
          </div>
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px; float:left;">
+            <button style="width:120px; float:left; margin-top:12px; margin-left:12px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btStats" title="Show Stats of the player" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-chart-bars">icon</span>Stats</button>
          </div>
          <div id="DialogMessage" title="Information">
             <p id="ResultMessage"></p>
+         </div>
+         <div id="DialogStats" title="Stats">
+            <p id="ResultMessageStats"></p>
+            <table>
+               <tr>
+                 <td>Games: </td>
+                 <td id="StatsGames">0</td>                 
+               </tr>
+               <tr>
+                 <td>Wins: </td>
+                 <td id="StatsWins">0</td>                 
+               </tr>
+               <tr>
+                  <td>Losts: </td>
+                  <td id="StatsLosts">0</td>                 
+                </tr>
+                <tr>
+                  <td>Draws: </td>
+                  <td id="StatsDraws">0</td>                 
+                </tr>
+             </table> 
          </div>
          <div id="DialogNewGame" title="Create new game">
             <div style="background-color:#daa351; border:1px #daa351 solid; width:500px; height:400px; margin:0 auto 0 auto;">

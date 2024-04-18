@@ -1,4 +1,5 @@
 var MiTurno;
+var IsFliped = false;
 
 function IniGridRetos(){
 
@@ -17,9 +18,17 @@ function IniGridRetos(){
         height:472,
         onSelectRow:function(id){
             var Player = $(this).jqGrid('getCell',id,'Player');
+            var Min = $(this).jqGrid('getCell',id,'Min');
+            var Max = $(this).jqGrid('getCell',id,'Max');
             // id = Room
             if (Player!=MyName){
-                AceptarReto(Player,id);
+                if ((Min <= MyElo)  && (Max >= MyElo)){
+                    AceptarReto(Player,id);
+                }else{
+                    $('#ResultMessage').text('Min Max rating is out of range')
+                    $('#DialogMessage').dialog('open');
+                }
+                
             }else{
                 // Cambio de color si es mi reto
                 $(this).find('.ui-state-highlight').css('background','#80BFFF');
@@ -79,6 +88,7 @@ function AceptarRetoBack(data){
             $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));           
             MiTurno = false;
             board1.flip();
+            IsFliped = true;
             socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});
         }
         $('#lbNombreJugador').text(data.MyName);
@@ -99,6 +109,7 @@ function SortearColor(){
 
 function SetValuesBack(data){
     socket.emit('CancelarReto',{MyName:data.OpName})
+    socket.emit('CancelarReto',{MyName:data.MyName})
 
     $('#btCancelarReto').hide();
     $('#btCrearReto').hide();
@@ -114,6 +125,7 @@ function SetValuesBack(data){
         OpElo = data.MyElo;
         $('#lbRatingJugador').text(MyElo);
         board1.flip();
+        IsFliped = true;
         MiTurno = false;
         StartTimer('Arriba');
         $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
