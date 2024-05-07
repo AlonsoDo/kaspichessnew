@@ -1,3 +1,45 @@
+var nCoordenadas = 1;
+var nHighlight = 1;
+var nPromote = 1;
+var nSound = 1;
+var cWelcome = 'Hello';
+var cCountry = 'AD'; 
+var cCountryLong = 'Andorra';  
+
+function LoadIniDataBack(data){
+	var aPlayerIniData = JSON.parse(data.PlayerIniData);
+	
+	MyElo = aPlayerIniData[0].Elo;
+    $('#DivGeneralChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
+                            'Sys: ' + '</span>' + 
+                            '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
+                            'Welcome ' + MyName + '</span><br>');
+    $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
+    $('#DivGeneralChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
+                            'Sys: ' + '</span>' + 
+                            '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
+                            'Your initial rating is: ' + MyElo + '</span><br>');
+    $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
+	$('#Minutes').val(aPlayerIniData[0].Minutes);
+	$('#Seconds').val(aPlayerIniData[0].Seconds);
+	$('#MinRating').val(aPlayerIniData[0].MinElo);
+	$('#MaxRating').val(aPlayerIniData[0].MaxElo);
+	if (aPlayerIniData[0].Rated == 1){
+		$('#SelectRated').val('Rated');
+	}else{
+		$('#SelectRated').val('UnRated');
+	}
+	$('#SelectColor').val(aPlayerIniData[0].Color);
+
+	nCoordenadas = aPlayerIniData[0].Coordenadas;
+	nHighlight = aPlayerIniData[0].Highlight;
+	nPromote = aPlayerIniData[0].Promote;
+	nSound = aPlayerIniData[0].Sound;
+	cWelcome = aPlayerIniData[0].Welcome;
+	cCountry = aPlayerIniData[0].Country; 
+	cCountryLong = aPlayerIniData[0].Alt;
+}
+
 function SendMensageGeneralChatBack(data){
     $('#DivGeneralChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
                             data.PlayerName + ': ' + '</span>' + 
@@ -54,8 +96,7 @@ function IniDialogNewGame(){
     buttons: {
             'Create new game': function() {
                 if (CreateNewGame()){
-                  var Color = $('#SelectColor').val();
-                  //alert(Color) Ok
+                  var Color = $('#SelectColor').val();                  
                   var Minutes = $('#Minutes').val();
                   var Seconds = $('#Seconds').val();
                   var Rated = $('#SelectRated').val();
@@ -65,14 +106,105 @@ function IniDialogNewGame(){
                   $('#btCancelarReto').show();
                   $('#btCrearReto').hide();
                   $(this).dialog('close');
+				  $('#Message2').text('');
                 }                          
             }, 
             Cancel: function() {
                 $(this).dialog('close');
-            }
+				$('#Message2').text('');
+            },
+			'Save': function() {
+				var Rated;
+				if ($('#SelectRated').val() == 'Rated'){
+					Rated = 1;
+				}else{
+					Rated = 0;
+				}
+				if (CreateNewGame()){
+					socket.emit('SaveGameSetting',{PlayerName:MyName,Color:$('#SelectColor').val(),Minutes:$('#Minutes').val(),Seconds:$('#Seconds').val(),Rated:Rated,Min:$('#MinRating').val(),Max:$('#MaxRating').val()})
+					$(this).dialog('close');
+					$('#Message2').text('');
+				}
+			}
     }
   });
 
+}
+
+function IniDialogSetting(){
+
+	$('#DialogSetting').dialog({
+	  autoOpen:false,
+	  height:574,
+	  width:450,			
+	  modal: true,
+	  buttons: {
+			  'Save': function() {
+				 	SaveSetting();
+					$(this).dialog('close');                          
+			  }, 
+			  Cancel: function() {
+				 	$(this).dialog('close');
+			  }
+	  }
+	});
+  
+}
+
+function LoadSettingBack(data){
+	
+	if (data.Coordenadas == 1){
+		$('#cbShowCoord').prop('checked',true);
+	}else{
+		$('#cbShowCoord').prop('checked',false);
+	} 
+	if (data.Highlight == 1){
+		$('#cbHighLight').prop('checked',true);
+	}else{
+		$('#cbHighLight').prop('checked',false);
+	} 
+	if (data.Promote == 1){
+		$('#cbPromote').prop('checked',true);
+	}else{
+		$('#cbPromote').prop('checked',false);
+	}
+	if (data.Sound == 1){
+		$('#cbSound').prop('checked',true);
+	}else{
+		$('#cbSound').prop('checked',false);
+	}
+	$('#welcome').val(data.Welcome);
+	$("#country").val(data.Country);
+
+    $('#DialogSetting').dialog('open');
+}
+
+function SaveSetting(){
+	if ($('#cbShowCoord').is(':checked')){
+		nCoordenadas = 1;
+	}else{
+		nCoordenadas = 0;
+	}
+	if ($('#cbHighLight').is(':checked')){
+		nHighlight = 1;		
+	}else{
+		nHighlight = 0;		
+	}
+	if ($('#cbPromote').is(':checked')){
+		nPromote = 1;
+	}else{
+		nPromote = 0;
+	}
+	if ($('#cbSound').is(':checked')){
+		nSound = 1;
+	}else{
+		nSound = 0;
+	}
+	cWelcome = $('#welcome').val();
+	cCountry = $('#country').val();
+	cCountryLong = $('#country option:selected').text();
+
+	socket.emit('SaveSetting',{PlayerName:MyName,Coordenadas:nCoordenadas,Highlight:nHighlight,Promote:nPromote,Sound:nSound,Welcome:cWelcome,Country:cCountry,CountryLong:cCountryLong});               
 }
 
 function numberOnly(id) {

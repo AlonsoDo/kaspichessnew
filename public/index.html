@@ -60,7 +60,7 @@
 
                 
                 $('#btPlayAsGuest').on('click',function(){
-                    window.location = 'http://localhost:3000/main.html?name=Guest&pass=1234';
+                    window.location = 'http://localhost:3000/main.html?name=Guest';
                 });
                 
                 $('#btLogin').on('click',function(){
@@ -72,7 +72,7 @@
                         $('#Message').text('Error trying to login. NickName o PassWord inconrect.')
                         $('#DialogMessage').dialog('open');
                     }else{
-                        window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val()+'&rating='+data.Elo;
+                        window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val();
                     }                    
                 });
 

@@ -23,6 +23,7 @@ var Room = 1;
 var nContRooms = 2;
 
 var aRetos = [];
+var aPlayers = [];
 
 io.on('connection', function(socket){
 
@@ -37,6 +38,13 @@ io.on('connection', function(socket){
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
 
+   socket.on('EnviarNombre',function(data){
+      console.log(data.PlayerName)
+      aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id});
+      console.log(aPlayers)
+      socket.emit('PlayersOnLine',{aPlayers:aPlayers});
+   });   
+   
    socket.on('TryToLogin',function(data){
       console.log('TryToLogin')
       console.log(data)
@@ -76,6 +84,69 @@ io.on('connection', function(socket){
          }else{
             io.to(socket.id).emit('StatsBack',{Error:false,Games:rows[0].Games,Wins:rows[0].Wins,Losts:rows[0].Losts,Draws:rows[0].Draws});
          }                        
+         connection.release();        
+         });
+      });
+
+   });
+
+   socket.on('LoadIniData',function(data){
+      console.log(data.PlayerName)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.PlayerName+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);         
+         io.to(socket.id).emit('LoadIniDataBack',{PlayerIniData:JSON.stringify(rows)});
+         connection.release();        
+         });
+      });
+
+   });
+
+   socket.on('LoadSetting',function(data){
+      console.log(data.PlayerName)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.PlayerName+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         io.to(socket.id).emit('LoadSettingBack',{Coordenadas:rows[0].Coordenadas,Highlight:rows[0].Highlight,Promote:rows[0].Promote,Sound:rows[0].Sound,Welcome:rows[0].Welcome,Country:rows[0].Country});
+         connection.release();        
+         });
+      });
+
+   });
+   
+   socket.on('SaveSetting',function(data){
+      console.log(data.PlayerName)
+      
+      pool.getConnection(function(err,connection){      
+         connection.query("UPDATE autentificacion SET Coordenadas='" + data.Coordenadas + "' , Highlight='" + data.Highlight + "' , Promote='" + data.Promote + "' , Sound='" + data.Sound + "' , Welcome='" + data.Welcome + "' , Country='" + data.Country + "' , Alt='" + data.CountryLong + "' WHERE User='" + data.PlayerName + "'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         connection.release();        
+         });
+      });
+
+   }); 
+
+   socket.on('SaveGameSetting',function(data){
+      console.log(data.PlayerName)
+      
+      pool.getConnection(function(err,connection){      
+         connection.query("UPDATE autentificacion SET Color='" + data.Color + "' , Minutes='" + data.Minutes + "' , Seconds='" + data.Seconds + "' , Rated='" + data.Rated + "' , MinElo='" + data.Min + "' , MaxElo='" + data.Max + "' WHERE User='" + data.PlayerName + "'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
          connection.release();        
          });
       });
@@ -219,6 +290,15 @@ io.on('connection', function(socket){
          }
       }
       io.emit('CancelarRetoBack',{Room:bRoom});
+
+      for (var i = 0; i < aPlayers.length; i++){
+         if (aPlayers[i].SocketId == socket.id){            
+            // Quitar
+            aPlayers.splice(i,1);
+            break;
+         }
+      }
+
    });
 
    socket.on('LeaveRoom',function(data){
