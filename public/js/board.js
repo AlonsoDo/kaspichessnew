@@ -4,7 +4,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
     
     try {
         if (MiTurno){
-            chess.move({ from:source, to:target, promotion:'q' });
+            chess.move({ from:source, to:target, promotion:'q' }); 
             StopTimer('Abajo');
             socket.emit('SendPos',{source:source,target:target,promotion:'q',PlayRoom:PlayRoom,TiempoRestanteAbajo:TiempoRestanteAbajo});
             MiTurno = false;            
@@ -24,7 +24,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 $('#btOfrecerTablas').hide();
                 $('#btResign').hide();
                 $('#btMain').show();
-                ResetBotones();
+                ResetBotones();                
             }
             
             if (chess.isCheckmate()){                
@@ -37,7 +37,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
                 MyElo = Math.round(MyElo);
                 OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-                OpElo = Math.round(OpElo);                
+                OpElo = Math.round(OpElo);  
+                
+                socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+
                 $('#ResultMessage').text('You have won the game by CheckMate. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
                 $('#DialogMessage').dialog('open'); 
 
@@ -52,6 +55,8 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 MyElo = Math.round(MyElo);
                 OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
                 OpElo = Math.round(OpElo);
+
+                socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
                 var cVarElo;
                 if (VarElo >= 0){
@@ -99,7 +104,7 @@ function SendPosBack(data){
         $('#btOfrecerTablas').hide();
         $('#btResign').hide();
         $('#btMain').show();
-        ResetBotones();
+        ResetBotones();        
     }
     
     if (chess.isCheckmate()){
@@ -112,7 +117,10 @@ function SendPosBack(data){
         MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
         MyElo = Math.round(MyElo);
         OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-        OpElo = Math.round(OpElo);                
+        OpElo = Math.round(OpElo); 
+        
+        socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
+
         $('#ResultMessage').text('You have lost the game by CheckMate. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
         $('#DialogMessage').dialog('open');  
 
@@ -127,6 +135,8 @@ function SendPosBack(data){
         MyElo = Math.round(MyElo);
         OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
         OpElo = Math.round(OpElo);
+
+        socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
         var cVarElo;
         if (VarElo >= 0){
@@ -186,27 +196,59 @@ function UpdateTimer(Posicion) {
     }else{
         $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo - ValorTiempoTranscurrido));        
         if((TiempoRestanteAbajo - ValorTiempoTranscurrido)<=0){
-            socket.emit('LostByTime',{PlayRoom:PlayRoom});
-            StopTimer('Abajo')
-            $('#btOfrecerTablas').hide();
-            $('#btResign').hide();
-            $('#btMain').show();
-            ResetBotones();
-            $('#lbResultadoJugador').text('0');
-            $('#lbResultadoOponente').text('1');
-            MiTurno = false;
-            $('#lbRelojJugador').text('00:00:00');
+            // Fin de tiempo
+            // Comprobar tablas por rey solo
+            if (KingAlone(Turno())){
+                
+                StopTimer('Abajo')
+                $('#btOfrecerTablas').hide();
+                $('#btResign').hide();
+                $('#btMain').show();
+                ResetBotones();
+                $('#lbResultadoJugador').text('1/2');
+                $('#lbResultadoOponente').text('1/2');
+                MiTurno = false;
+                $('#lbRelojJugador').text('00:00:00');
 
-            var Dif = MyElo - OpElo;
-            var Exig = CalcularExigencia(Dif);
-            var VarElo = (0 - Exig)/5;
-            MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-            MyElo = Math.round(MyElo);
-            OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-            OpElo = Math.round(OpElo);
+                var Dif = MyElo - OpElo;
+                var Exig = CalcularExigencia(Dif);
+                var VarElo = (50 - Exig)/5;
+                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                MyElo = Math.round(MyElo);
+                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                OpElo = Math.round(OpElo);
 
-            $('#ResultMessage').text('You have lost the game by time. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
-            $('#DialogMessage').dialog('open');            
+                socket.emit('DrawByTime',{PlayRoom:PlayRoom});
+                socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+
+                $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
+                $('#DialogMessage').dialog('open');
+            }else{            
+                
+                StopTimer('Abajo')
+                $('#btOfrecerTablas').hide();
+                $('#btResign').hide();
+                $('#btMain').show();
+                ResetBotones();
+                $('#lbResultadoJugador').text('0');
+                $('#lbResultadoOponente').text('1');
+                MiTurno = false;
+                $('#lbRelojJugador').text('00:00:00');
+
+                var Dif = MyElo - OpElo;
+                var Exig = CalcularExigencia(Dif);
+                var VarElo = (0 - Exig)/5;
+                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                MyElo = Math.round(MyElo);
+                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                OpElo = Math.round(OpElo);
+
+                socket.emit('LostByTime',{PlayRoom:PlayRoom});
+                socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
+
+                $('#ResultMessage').text('You have lost the game by time. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
+                $('#DialogMessage').dialog('open');
+            }
         }       
     }
     
@@ -267,6 +309,7 @@ function WinByTime(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
+    
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -278,14 +321,39 @@ function WinByTime(data){
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
 
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+
     $('#ResultMessage').text('You have won the game by time. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
+    $('#DialogMessage').dialog('open'); 
+}
+
+function DrawByTime(data){
+    $('#btOfrecerTablas').hide();
+    $('#btResign').hide();
+    $('#btMain').show();
+    ResetBotones();
+    
+    $('#lbResultadoJugador').text('1/2');
+    $('#lbResultadoOponente').text('1/2');
+
+    var Dif = MyElo - OpElo;
+    var Exig = CalcularExigencia(Dif);
+    var VarElo = (50 - Exig)/5;
+    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+    MyElo = Math.round(MyElo);
+    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+    OpElo = Math.round(OpElo);
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+
+    $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
     $('#DialogMessage').dialog('open'); 
 }
 
 function LostByResign(){
 
     socket.emit('LostByResign',{PlayRoom:PlayRoom});
-    
+        
     if (MiTurno){
         StopTimer('Abajo');
     }else{
@@ -307,6 +375,8 @@ function LostByResign(){
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
 
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
+
     $('#ResultMessage').text('You have resigned the game. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
@@ -322,6 +392,7 @@ function WinByResign(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
+    
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -332,6 +403,8 @@ function WinByResign(data){
     MyElo = Math.round(MyElo);
     OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
     OpElo = Math.round(OpElo);
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
     $('#ResultMessage').text('You have won the game by resign. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
     $('#DialogMessage').dialog('open');
@@ -397,10 +470,11 @@ function AceptarTablas(){
         cVarElo = VarElo;
     }
         
-    $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
-    $('#DialogMessage').dialog('open');
-
     socket.emit('AceptarTablas',{PlayRoom:PlayRoom});
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+    
+    $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+    $('#DialogMessage').dialog('open');    
         
 }
 
@@ -433,6 +507,8 @@ function AceptarTablasBack(data){
     }else{
         cVarElo = VarElo;
     }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
         
     $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
     $('#DialogMessage').dialog('open');

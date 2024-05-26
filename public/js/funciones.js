@@ -4,7 +4,55 @@ var nPromote = 1;
 var nSound = 1;
 var cWelcome = 'Hello';
 var cCountry = 'AD'; 
-var cCountryLong = 'Andorra';  
+var cCountryLong = 'Andorra'; 
+var WhoPlayer; 
+
+function IniGridPlayers(){
+	jQuery('#GridPlayers').jqGrid({
+		datatype: 'local',
+		height: 285,
+		width:513,
+	   	colNames:['Nick Name','Rating','Country','Title','Status','Games','IdPlayer'],
+	   	colModel:[
+                            {name:'Name',index:'Name', width:250},
+                            {name:'Rating',index:'Rating',width:70,align:'center'},	 
+                            {name:'Country',width:24,fixed:true,align:'center',
+                                formatter: function(cellvalue, options, rowObject){
+                                    var cTitle = rowObject['Title'];
+                                    return "<img src='res/img/flags/16/"+cellvalue+".png' title='"+cTitle+"' alt='Country' />";
+                                }                             
+                            },
+                            {name:'Title',width:50,hidden:true},
+                            {name:'Status',width:110},
+                            {name:'Games',index:'Games',sorttype:'int',width:90,align:'right'},
+                            {name:'IdPlayer',width:50,hidden:true}
+                            ],
+		onSelectRow: function(id){
+		    var rowData = jQuery(this).getRowData(id); 
+            WhoPlayer = rowData['IdPlayer']; 
+			alert(WhoPlayer)                   
+		}
+    });
+}
+
+function LoadPlayersBack(data){
+	var Name,Country,Title,Rating,Status,Games,IdPlayer;
+
+	$('#GridPlayers').jqGrid('clearGridData');
+
+	for(var i=0;i<data.Players.length;i++){
+		Name = data.Players[i].PlayerName;
+		Country = data.Players[i].Flag;
+		Title = data.Players[i].CountryLong;
+		Rating = data.Players[i].Rating;
+		Status = data.Players[i].Status;
+		Games = data.Players[i].Games;
+		IdPlayer = data.Players[i].SocketId;
+		jQuery('#GridPlayers').jqGrid('addRowData',i+1,{ Name:Name , Rating:Rating , Country:Country , Title:Title , Status:Status , Games:Games , IdPlayer:IdPlayer});
+    }
+
+	$('#lbPlayersOnLine').text('( '+data.Players.length+' )');
+}
 
 function LoadIniDataBack(data){
 	var aPlayerIniData = JSON.parse(data.PlayerIniData);
@@ -46,6 +94,14 @@ function SendMensageGeneralChatBack(data){
                             '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
                             data.ChatText + '</span><br>');
     $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
+}
+
+function SendMensagePrivateChatBack(data){
+    $('#DivPrivateChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
+                            data.PlayerName + ': ' + '</span>' + 
+                            '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
+                            data.ChatText + '</span><br>');
+    $('#DivPrivateChat').animate({scrollTop:$('#DivPrivateChat').prop('scrollHeight')},500);
 }
 
 function IniDialogMessage(){
@@ -459,5 +515,68 @@ function CalcularExigencia(nDif){
 	}	
 	
 	return nExig;
+	
+}
+
+function Turno(){
+	var cString = chess.fen();
+	var aArray = cString.split(' ');
+	if (aArray[1] == 'w'){
+		return 'Black';
+	}else{
+		return 'White';
+	}
+}
+
+function KingAlone(Turno){
+	
+	// Comprobar si rey solo en caida de bandera
+	var cCadenaFen = chess.fen();
+	var aArray = cCadenaFen.split(' ');
+	var cSubCadena = aArray[0];
+	var i;
+	var cChar;
+
+	if (Turno == 'White'){
+		
+		for ( i = 0; i < cSubCadena.length; i++){
+			cChar = cSubCadena.substring(i,i+1);
+						
+			if (cChar == 'P'){
+				return false;
+			}else if (cChar == 'R'){
+				return false;
+			}else if (cChar == 'N'){
+				return false;
+			}else if (cChar == 'B'){
+				return false;
+			}else if (cChar == 'Q'){
+				return false;
+			}
+			
+		}
+		
+	}else{
+
+		for ( i = 0; i < cSubCadena.length; i++){
+			cChar = cSubCadena.substring(i,i+1);
+						
+			if (cChar == 'p'){
+				return false;
+			}else if (cChar == 'r'){
+				return false;
+			}else if (cChar == 'n'){
+				return false;
+			}else if (cChar == 'b'){
+				return false;
+			}else if (cChar == 'q'){
+				return false;
+			}
+			
+		}
+
+	}
+
+	return true;
 	
 }

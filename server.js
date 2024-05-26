@@ -38,9 +38,67 @@ io.on('connection', function(socket){
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
 
+   socket.on('UpdateStatus',function(data){
+      for (var i = 0; i < aPlayers.length; i++){
+         if (aPlayers[i].PlayerName == data.MyName){
+            aPlayers[i].Status = data.Status;
+            aPlayers[i].Rating = data.MyElo;
+            //Actualizar games
+            if (data.Status == 'Playing'){
+               aPlayers[i].Games = aPlayers[i].Games + 1;
+            }
+            break;
+         }
+      }
+
+      // Grabar
+      var cQuery;
+
+      if (data.Status == 'On Line'){
+
+         if (data.Result == 100){            
+            pool.getConnection(function(err,connection){            
+               connection.query("UPDATE autentificacion SET Elo='" + data.MyElo+"' , Games=Games+1 , Wins=Wins+1 WHERE User='"+data.MyName+"'",function(err,rows){
+               if (err){
+                  console.log('Error: ' + err.message);
+                  throw err;
+               } 
+               connection.release();
+               });   
+            }); 
+         }else if (data.Result == 50){              
+            pool.getConnection(function(err,connection){            
+               connection.query("UPDATE autentificacion SET Elo='" + data.MyElo+"' , Games=Games+1 , Draws=Draws+1 WHERE User='"+data.MyName+"'",function(err,rows){
+               if (err){
+                  console.log('Error: ' + err.message);
+                  throw err;
+               } 
+               connection.release();
+               });   
+            }); 
+         }else if (data.Result == 0){              
+            pool.getConnection(function(err,connection){            
+               connection.query("UPDATE autentificacion SET Elo='" + data.MyElo+"' , Games=Games+1 , Losts=Losts+1 WHERE User='"+data.MyName+"'",function(err,rows){
+               if (err){
+                  console.log('Error: ' + err.message);
+                  throw err;
+               } 
+               connection.release();
+               });   
+            }); 
+         }         
+           
+      }
+   });
+   
+   socket.on('LoadPlayers',function(data){
+      io.to(socket.id).emit('LoadPlayersBack',{Players:aPlayers});
+   });   
+   
    socket.on('EnviarNombre',function(data){
+      // Jugadores invitados
       console.log(data.PlayerName)
-      aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id});
+      aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id,Flag:'AD',CountryLong:'Andorra',Rating:1200,Status:'On Line',Games:0});
       console.log(aPlayers)
       socket.emit('PlayersOnLine',{aPlayers:aPlayers});
    });   
@@ -101,6 +159,9 @@ io.on('connection', function(socket){
          } 
          console.log('Number of rows: '+rows.length);         
          io.to(socket.id).emit('LoadIniDataBack',{PlayerIniData:JSON.stringify(rows)});
+         aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id,Flag:rows[0].Country,CountryLong:rows[0].Alt,Rating:rows[0].Elo,Status:'On Line',Games:0});
+         console.log(aPlayers)
+         socket.emit('PlayersOnLine',{aPlayers:aPlayers});
          connection.release();        
          });
       });
@@ -116,7 +177,9 @@ io.on('connection', function(socket){
            console.log('Error: ' + err.message);
            throw err;
          } 
-         io.to(socket.id).emit('LoadSettingBack',{Coordenadas:rows[0].Coordenadas,Highlight:rows[0].Highlight,Promote:rows[0].Promote,Sound:rows[0].Sound,Welcome:rows[0].Welcome,Country:rows[0].Country});
+         if (rows.length > 0){         
+            io.to(socket.id).emit('LoadSettingBack',{Coordenadas:rows[0].Coordenadas,Highlight:rows[0].Highlight,Promote:rows[0].Promote,Sound:rows[0].Sound,Welcome:rows[0].Welcome,Country:rows[0].Country});
+         }
          connection.release();        
          });
       });
@@ -210,6 +273,12 @@ io.on('connection', function(socket){
       socket.broadcast.to(data.PlayRoom).emit('WinByTime',data);
    });
 
+   socket.on('DrawByTime',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      //Send this event to everyone in the room excect the sender.
+      socket.broadcast.to(data.PlayRoom).emit('DrawByTime',data);
+   });
+
    socket.on('LostByResign',function(data){
       console.log('Play Room: ' + data.PlayRoom)
       //Send this event to everyone in the room excect the sender.
@@ -227,6 +296,17 @@ io.on('connection', function(socket){
       //console.log(socket.id)
       // Join to Room
       socket.join(data.Room);
+
+      var Flag = 'AD'; // default
+      var CountryLong = 'Andorra';
+      for (var i = 0; i < aPlayers.length; i++){
+         if (aPlayers[i].PlayerName == data.OpName){
+            Flag = aPlayers[i].Flag;
+            CountryLong = aPlayers[i].CountryLong;
+            break;
+         }
+      }
+
       // Join Oponent to room (data.OpName)
       var OpSocketId;
       for (var i = 0; i < aRetos.length; i++){
@@ -236,7 +316,7 @@ io.on('connection', function(socket){
             console.log(data.Room)
             io.sockets.sockets.get(OpSocketId).join(data.Room);
             console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)            
-            io.sockets.in(data.Room).emit('AceptarRetoBack',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes,Seconds:aRetos[i].Seconds,Color:aRetos[i].Color});
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{CountryLong:CountryLong,Flag:Flag,MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes,Seconds:aRetos[i].Seconds,Color:aRetos[i].Color});
             break;
          }
       }
@@ -271,6 +351,24 @@ io.on('connection', function(socket){
       console.log(data);
       //Send this event to everyone in the general room = 1.
       io.sockets.in('Room'+Room).emit('SendMensageGeneralChatBack',data);
+      
+      //Send this event to everyone in the room excect the sender.
+      //socket.broadcast.to('Room' + Room).emit('EnviarChatBack',data);
+   });
+
+   socket.on('SendMensagePrivateChat',function(data){
+      console.log(data);
+      //Send this event to everyone in the playroom
+      io.sockets.in(data.PlayRoom).emit('SendMensagePrivateChatBack',data);
+      
+      //Send this event to everyone in the room excect the sender.
+      //socket.broadcast.to('Room' + Room).emit('EnviarChatBack',data);
+   });
+
+   socket.on('Welcome',function(data){
+      console.log(data);
+      //Send this event to everyone in the playroom
+      io.sockets.in(data.PlayRoom).emit('WelcomeBack',data);
       
       //Send this event to everyone in the room excect the sender.
       //socket.broadcast.to('Room' + Room).emit('EnviarChatBack',data);

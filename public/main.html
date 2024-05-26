@@ -82,20 +82,20 @@
                             '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
                             'If you register you will begin with 1800 of rating' + '</span><br>');
                $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
+               socket.emit('EnviarNombre',{PlayerName:MyName});
             }else{
                MyName = name;
                socket.emit('LoadIniData',{PlayerName:MyName});
             }
 
             $('#lbJugadorConectado').text(MyName);
-            socket.emit('EnviarNombre',{PlayerName:MyName});
-
+            
             // Posicion inicial
             var config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd};
             board1 = ChessBoard('board1',config);
 
-            $('#ContenedorTablero').hide();
-
+            $('#ContenedorTablero').hide();            
+            
             socket.on('LoadIniDataBack',function(data){
                //alert(data.PlayerIniData)
                LoadIniDataBack(data);
@@ -107,6 +107,14 @@
                             '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
                             'Players on line ( ' + data.aPlayers.length + ' )' + '</span><br>');
                $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
+            });
+
+            socket.on('WelcomeBack',function(data){               
+               $('#DivPrivateChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
+                            data.MyName + ': </span>' + 
+                            '<span style="color:#d6482a; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">' +
+                            data.Welcome + '</span><br>');
+               $('#DivPrivateChat').animate({scrollTop:$('#DivPrivateChat').prop('scrollHeight')},500);
             });
             
             socket.on('SendPosBack',function(data){
@@ -158,8 +166,10 @@
             $('#btMain').hide();
             $('#OfrecerTablas2').hide();
             $('#btSendMensageGeneralChat').button(); 
+            $('#btSendMensagePrivateChat').button();
             $('#btStats').button(); 
-            $('#btSetting').button();          
+            $('#btSetting').button();   
+            $('#btReloadPlayers').button();       
 
             $('#btSendMensageGeneralChat').on('click',function(){
                socket.emit('SendMensageGeneralChat',{PlayerName:MyName,ChatText:$('#TextMensageGeneralChat').val()});
@@ -173,8 +183,24 @@
                }                  
             });
 
+            $('#btSendMensagePrivateChat').on('click',function(){
+               socket.emit('SendMensagePrivateChat',{PlayerName:MyName,ChatText:$('#TextMensagePrivateChat').val(),PlayRoom:PlayRoom});
+               $('#TextMensagePrivateChat').val('');
+            });
+
+            $('#TextMensagePrivateChat').on('keydown',function(event){
+               if(event.which == 13){
+                  socket.emit('SendMensagePrivateChat',{PlayerName:MyName,ChatText:$('#TextMensagePrivateChat').val(),PlayRoom:PlayRoom});
+                  $('#TextMensagePrivateChat').val('');
+               }                  
+            });
+
             socket.on('SendMensageGeneralChatBack',function(data){
                SendMensageGeneralChatBack(data);
+            });
+
+            socket.on('SendMensagePrivateChatBack',function(data){
+               SendMensagePrivateChatBack(data);
             });
 
             socket.on('CancelarRetoBack',function(data){
@@ -183,6 +209,8 @@
 
             IniGridRetos();
             jQuery('#GridRetos').addClass('myclass');
+
+            IniGridPlayers();
 
             $('#Tabs').tabs();
 
@@ -202,6 +230,10 @@
 
             socket.on('WinByTime',function(data){               
                WinByTime(data);              
+            });
+
+            socket.on('DrawByTime',function(data){               
+               DrawByTime(data);              
             });
 
             socket.on('WinByResign',function(data){               
@@ -252,8 +284,25 @@
                socket.emit('LoadSetting',{PlayerName:MyName});                           
             });
 
+            $('#btReloadPlayers').on('click',function(){
+               socket.emit('LoadPlayers',{});
+            });
+
             socket.on('LoadSettingBack',function(data){               
                LoadSettingBack(data);                          
+            });
+
+            $('#Tabs').on('tabsactivate', function(event, ui) {
+               var newIndex = ui.newTab.index();
+               // Players
+               if (newIndex == 1){
+                  socket.emit('LoadPlayers',{});
+               }
+            });
+
+            socket.on('LoadPlayersBack',function(data){               
+               console.log(data) 
+               LoadPlayersBack(data);                            
             });
 
          });
@@ -264,7 +313,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.0 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.2 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -281,7 +330,7 @@
                <label id="lbRatingOponente" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">1200</label>								
             </div>
             <div id="FlagOponente" style="background-color:#daa351; border:0px black solid; width:20px; height:30px; margin-top:12px; margin-left:10px; float:left;">
-               <img src="res/img/flags/16/ad.png" alt="Country" width="16" height="16" style="margin-top:8px;"> 								
+               <img id="ImgFlagOponente" src="res/img/flags/16/ad.png" alt="Country" width="16" height="16" style="margin-top:8px;"> 								
             </div>
             <div id="ResultadoOponente" style="background-color:#daa351; border:0px black solid; width:30px; height:30px; margin-top:12px; margin-left:10px; float:left;">
                <label id="lbResultadoOponente" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">1/2</label>								
@@ -301,7 +350,7 @@
                <label id="lbRatingJugador" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">1200</label>								
             </div>
             <div id="FlagJugador" style="background-color:#daa351; border:0px black solid; width:20px; height:30px; margin-top:12px; margin-left:10px; float:left;">
-               <img src="res/img/flags/16/ad.png" alt="Country" width="16" height="16" style="margin-top:8px;"> 								
+               <img id="ImgFlagJugador" src="res/img/flags/16/ad.png" alt="Country" width="16" height="16" style="margin-top:8px;"> 								
             </div>
             <div id="ResultadoJugador" style="background-color:#daa351; border:0px black solid; width:30px; height:30px; margin-top:12px; margin-left:10px; float:left;">
                <label id="lbResultadoJugador" style="color:#0c0c0c; margin-left:0px; margin-top:4px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">1/2</label>								
@@ -330,7 +379,12 @@
                      </div>
                   </div>
                   <div id="tabs-2">
-                     <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+                     <table id="GridPlayers"></table>
+                     <div style="background-color:#daa351; border:1px black solid; width:514px; height:52px;">
+                        <label style="color:#f7f5f4; margin-left:20px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Players on line</label>								
+                        <label id="lbPlayersOnLine" style="color:#f7f5f4; margin-left:4px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">( 0 )</label>								
+                        <button id="btReloadPlayers" style="padding:4px 4px 4px 4px; float:left; font-size:18px; font-weight:bold; margin-top:10px; margin-left:16px;" title="Reload players data">Refresh</button>
+                     </div>
                   </div>
                   <div id="tabs-3">
                      <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
@@ -340,7 +394,12 @@
                      <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
                   </div>
                   <div id="tabs-5">
-                     <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+                     <div id="DivPrivateChat" style="border:0px black solid; position:relative; height:352px; width:514px; overflow-x:hidden; overflow-y:scroll;">
+                     </div>
+                     <div id="MensajeChat2" style="margin-top:3px; margin-left:0px; border:0px black solid; width:514px; height:36px;">
+                        <input type="text" maxlength="200" id="TextMensagePrivateChat" placeholder="Please type your message here!" style="float:left; color:#d35d3f; clear:left; margin-top:8px; font-family:Arial,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin-left:6px; height: 16px; width:452px;">
+                        <button id="btSendMensagePrivateChat" style="padding:0px 0px 0px 0px; float:left; font-size:14px; font-weight:bold; margin-top:8px; margin-left:6px;">Send</button>
+                     </div>
                   </div>
                </div>
             </div>

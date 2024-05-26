@@ -48,12 +48,14 @@ function CancelarRetoBack(data){
 
 function AceptarRetoBack(data){
     var ColorSide;
+    var Flag;
     
     $('#ContenedorRetos').hide();
     $('#ContenedorTablero').show();
     $('#btCancelarReto').hide();
     $('#btAbortarPartida').show();
     $('#btCrearReto').hide();
+    $('#DivPrivateChat').html('');
     
     if (MyName == data.MyName){
         TiempoPartida = data.Minutes * 60000;
@@ -78,7 +80,7 @@ function AceptarRetoBack(data){
             $('#lbRelojOponente').text(FormatearMilisegundos(TiempoPartida));
             $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));
             MiTurno = true;            
-            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});            
+            socket.emit('SetValues',{CountryLong:cCountryLong,Flag:cCountry,MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});            
         }else{ 
             $('#lbRatingOponente').text(data.MyElo);
             OpElo = data.MyElo;
@@ -89,12 +91,21 @@ function AceptarRetoBack(data){
             MiTurno = false;
             board1.flip();
             IsFliped = true;
-            socket.emit('SetValues',{MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});
+            socket.emit('SetValues',{CountryLong:cCountryLong,Flag:cCountry,MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});
         }
         $('#lbNombreJugador').text(data.MyName);
         $('#lbNombreOponente').text(data.OpName);
         $('#lbResultadoOponente').text('');
         $('#lbResultadoJugador').text('');
+        Flag = data.Flag.toLowerCase();
+        $('#ImgFlagOponente').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+        Flag = cCountry.toLowerCase();
+        $('#ImgFlagJugador').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+        $('#ImgFlagOponente').prop('title',data.CountryLong);
+        $('#ImgFlagJugador').prop('title',cCountryLong);
+
+        socket.emit('UpdateStatus',{MyName:data.MyName,Status:'Playing'});
+        socket.emit('Welcome',{MyName:data.MyName,Welcome:cWelcome,PlayRoom:PlayRoom});
     }
 }
 
@@ -108,12 +119,15 @@ function SortearColor(){
 }
 
 function SetValuesBack(data){
+    var Flag;
+    
     socket.emit('CancelarReto',{MyName:data.OpName})
     socket.emit('CancelarReto',{MyName:data.MyName})
 
     $('#btCancelarReto').hide();
     $('#btCrearReto').hide();
     $('#btAbortarPartida').show();
+    $('#DivPrivateChat').html('');
     
     PlayRoom = data.Room;
     TiempoPartida = data.Minutes * 60000;
@@ -143,6 +157,15 @@ function SetValuesBack(data){
     $('#lbNombreOponente').text(data.MyName);
     $('#lbResultadoOponente').text('');
     $('#lbResultadoJugador').text('');
+    Flag = data.Flag.toLowerCase();
+    $('#ImgFlagOponente').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+    Flag = cCountry.toLowerCase();
+    $('#ImgFlagJugador').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+    $('#ImgFlagOponente').prop('title',data.CountryLong);
+    $('#ImgFlagJugador').prop('title',cCountryLong);
+
+    socket.emit('UpdateStatus',{MyName:data.OpName,Status:'Playing'});
+    socket.emit('Welcome',{MyName:data.OpName,Welcome:cWelcome,PlayRoom:PlayRoom});
 }
 
 function ActualizarRetos(data){
