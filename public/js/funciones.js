@@ -528,6 +528,16 @@ function Turno(){
 	}
 }
 
+function TurnoReal(){
+	var cString = chess.fen();
+	var aArray = cString.split(' ');
+	if (aArray[1] == 'w'){
+		return 'White';
+	}else{
+		return 'Black';
+	}
+}
+
 function KingAlone(Turno){
 	
 	// Comprobar si rey solo en caida de bandera
@@ -579,4 +589,15 @@ function KingAlone(Turno){
 
 	return true;
 	
+}
+
+function DrawGame(){
+	var nContMoves;
+	var aMove = chess.history();
+	var LastMove = aMove[aMove.length-1];
+	if (Turno() == 'White'){
+		nContMoves = (aMove.length + 1)/2;
+		LastMove = nContMoves + '.' + LastMove;
+	}
+	$('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + LastMove + '</label>');
 }

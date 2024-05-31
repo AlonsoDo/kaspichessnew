@@ -38,6 +38,18 @@ io.on('connection', function(socket){
    //Send this event to everyone in the general room = 1.
    io.sockets.in('Room' + Room).emit('ConnectToRoom','Estas en la sala ' + Room);
 
+   socket.on('UpdateStatusDesc',function(data){
+      pool.getConnection(function(err,connection){            
+         connection.query("UPDATE autentificacion SET Elo='" + data.MyElo+"' , Games=Games+1 , Losts=Losts+1 WHERE User='"+data.MyName+"'",function(err,rows){
+         if (err){
+            console.log('Error: ' + err.message);
+            throw err;
+         } 
+         connection.release();
+         });   
+      });
+   });
+   
    socket.on('UpdateStatus',function(data){
       for (var i = 0; i < aPlayers.length; i++){
          if (aPlayers[i].PlayerName == data.MyName){
@@ -46,14 +58,13 @@ io.on('connection', function(socket){
             //Actualizar games
             if (data.Status == 'Playing'){
                aPlayers[i].Games = aPlayers[i].Games + 1;
+               aPlayers[i].PlayRoom = data.PlayRoom;
             }
             break;
          }
       }
 
-      // Grabar
-      var cQuery;
-
+      // Grabar      
       if (data.Status == 'On Line'){
 
          if (data.Result == 100){            
@@ -98,7 +109,7 @@ io.on('connection', function(socket){
    socket.on('EnviarNombre',function(data){
       // Jugadores invitados
       console.log(data.PlayerName)
-      aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id,Flag:'AD',CountryLong:'Andorra',Rating:1200,Status:'On Line',Games:0});
+      aPlayers.push({PlayRoom:Room,PlayerName:data.PlayerName,SocketId:socket.id,Flag:'AD',CountryLong:'Andorra',Rating:1200,Status:'On Line',Games:0});
       console.log(aPlayers)
       socket.emit('PlayersOnLine',{aPlayers:aPlayers});
    });   
@@ -159,7 +170,7 @@ io.on('connection', function(socket){
          } 
          console.log('Number of rows: '+rows.length);         
          io.to(socket.id).emit('LoadIniDataBack',{PlayerIniData:JSON.stringify(rows)});
-         aPlayers.push({PlayerName:data.PlayerName,SocketId:socket.id,Flag:rows[0].Country,CountryLong:rows[0].Alt,Rating:rows[0].Elo,Status:'On Line',Games:0});
+         aPlayers.push({PlayRoom:Room,PlayerName:data.PlayerName,SocketId:socket.id,Flag:rows[0].Country,CountryLong:rows[0].Alt,Rating:rows[0].Elo,Status:'On Line',Games:0});
          console.log(aPlayers)
          socket.emit('PlayersOnLine',{aPlayers:aPlayers});
          connection.release();        
@@ -316,7 +327,7 @@ io.on('connection', function(socket){
             console.log(data.Room)
             io.sockets.sockets.get(OpSocketId).join(data.Room);
             console.log('Oponent ' + OpSocketId + ' join to room: ' + data.Room)            
-            io.sockets.in(data.Room).emit('AceptarRetoBack',{CountryLong:CountryLong,Flag:Flag,MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes,Seconds:aRetos[i].Seconds,Color:aRetos[i].Color});
+            io.sockets.in(data.Room).emit('AceptarRetoBack',{Rated:aRetos[i].Rated,CountryLong:CountryLong,Flag:Flag,MyName:data.MyName,OpName:data.OpName,Room:data.Room,MyElo:aRetos[i].MyElo,Minutes:aRetos[i].Minutes,Seconds:aRetos[i].Seconds,Color:aRetos[i].Color});
             break;
          }
       }
@@ -390,7 +401,11 @@ io.on('connection', function(socket){
       io.emit('CancelarRetoBack',{Room:bRoom});
 
       for (var i = 0; i < aPlayers.length; i++){
-         if (aPlayers[i].SocketId == socket.id){            
+         if (aPlayers[i].SocketId == socket.id){ 
+            if (aPlayers[i].Status == 'Playing'){
+               //Send this event to everyone in the playroom
+               io.sockets.in(aPlayers[i].PlayRoom).emit('DiscPlaying',{PlayerName:aPlayers[i].PlayerName});
+            }           
             // Quitar
             aPlayers.splice(i,1);
             break;

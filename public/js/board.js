@@ -2,8 +2,11 @@ var OfreciendoTablas = false;
 
 function onDrop (source, target, piece, newPos, oldPos, orientation){
     
+    var VarElo;
+    
     try {
         if (MiTurno){
+            
             chess.move({ from:source, to:target, promotion:'q' }); 
             StopTimer('Abajo');
             socket.emit('SendPos',{source:source,target:target,promotion:'q',PlayRoom:PlayRoom,TiempoRestanteAbajo:TiempoRestanteAbajo});
@@ -13,6 +16,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
             $('#btOfrecerTablas').show();
             $('#btResign').show();
             $('#DeclinarTablas').hide();
+            DrawGame();
 
             if (OfreciendoTablas){
                 OfreciendoTablas = false;
@@ -31,13 +35,18 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
 
                 $('#lbResultadoJugador').text('1');
                 $('#lbResultadoOponente').text('0');
-                var Dif = MyElo - OpElo;
-                var Exig = CalcularExigencia(Dif);
-                var VarElo = (100 - Exig)/5;
-                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-                MyElo = Math.round(MyElo);
-                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-                OpElo = Math.round(OpElo);  
+
+                if (Rated == 'Rated'){
+                    var Dif = MyElo - OpElo;
+                    var Exig = CalcularExigencia(Dif);
+                    VarElo = (100 - Exig)/5;
+                    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                    MyElo = Math.round(MyElo);
+                    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                    OpElo = Math.round(OpElo); 
+                }else{
+                    VarElo = 0;
+                }
                 
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
@@ -48,13 +57,18 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
 
                 $('#lbResultadoJugador').text('1/2');
                 $('#lbResultadoOponente').text('1/2');
-                var Dif = MyElo - OpElo;
-                var Exig = CalcularExigencia(Dif);
-                var VarElo = (50 - Exig)/5;
-                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-                MyElo = Math.round(MyElo);
-                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-                OpElo = Math.round(OpElo);
+
+                if (Rated == 'Rated'){
+                    var Dif = MyElo - OpElo;
+                    var Exig = CalcularExigencia(Dif);
+                    VarElo = (50 - Exig)/5;
+                    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                    MyElo = Math.round(MyElo);
+                    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                    OpElo = Math.round(OpElo);
+                }else{
+                    VarElo = 0;
+                }
 
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
@@ -90,6 +104,8 @@ function onSnapEnd(){
 }
 
 function SendPosBack(data){
+
+    var VarElo;
     
     chess.move({ from:data.source,to:data.target,promotion:data.promotion});
     board1.position(chess.fen());
@@ -98,6 +114,7 @@ function SendPosBack(data){
     TiempoRestanteArriba = data.TiempoRestanteAbajo;
     $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba));
     StartTimer('Abajo');  
+    DrawGame();
     
     if (chess.isGameOver()){
         StopTimer('Abajo');
@@ -111,13 +128,18 @@ function SendPosBack(data){
 
         $('#lbResultadoJugador').text('0');
         $('#lbResultadoOponente').text('1');
-        var Dif = MyElo - OpElo;
-        var Exig = CalcularExigencia(Dif);
-        var VarElo = (0 - Exig)/5;
-        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-        MyElo = Math.round(MyElo);
-        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-        OpElo = Math.round(OpElo); 
+
+        if (Rated == 'Rated'){
+            var Dif = MyElo - OpElo;
+            var Exig = CalcularExigencia(Dif);
+            VarElo = (0 - Exig)/5;
+            MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+            MyElo = Math.round(MyElo);
+            OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+            OpElo = Math.round(OpElo);
+        }else{
+            VarElo = 0;
+        } 
         
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
@@ -128,13 +150,18 @@ function SendPosBack(data){
 
         $('#lbResultadoJugador').text('1/2');
         $('#lbResultadoOponente').text('1/2');
-        var Dif = MyElo - OpElo;
-        var Exig = CalcularExigencia(Dif);
-        var VarElo = (50 - Exig)/5;
-        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-        MyElo = Math.round(MyElo);
-        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-        OpElo = Math.round(OpElo);
+
+        if (Rated == 'Rated'){
+            var Dif = MyElo - OpElo;
+            var Exig = CalcularExigencia(Dif);
+            VarElo = (50 - Exig)/5;
+            MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+            MyElo = Math.round(MyElo);
+            OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+            OpElo = Math.round(OpElo);
+        }else{
+            VarElo = 0;
+        }
 
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
@@ -185,6 +212,8 @@ function StartTimer(Posicion) {
 }
 
 function UpdateTimer(Posicion) {
+
+    var VarElo;
 	
     ValorTiempoTranscurrido = ContadorTiempo();
     
@@ -210,13 +239,17 @@ function UpdateTimer(Posicion) {
                 MiTurno = false;
                 $('#lbRelojJugador').text('00:00:00');
 
-                var Dif = MyElo - OpElo;
-                var Exig = CalcularExigencia(Dif);
-                var VarElo = (50 - Exig)/5;
-                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-                MyElo = Math.round(MyElo);
-                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-                OpElo = Math.round(OpElo);
+                if (Rated == 'Rated'){
+                    var Dif = MyElo - OpElo;
+                    var Exig = CalcularExigencia(Dif);
+                    VarElo = (50 - Exig)/5;
+                    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                    MyElo = Math.round(MyElo);
+                    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                    OpElo = Math.round(OpElo);
+                }else{
+                    VarElo = 0;
+                }
 
                 socket.emit('DrawByTime',{PlayRoom:PlayRoom});
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
@@ -235,13 +268,17 @@ function UpdateTimer(Posicion) {
                 MiTurno = false;
                 $('#lbRelojJugador').text('00:00:00');
 
-                var Dif = MyElo - OpElo;
-                var Exig = CalcularExigencia(Dif);
-                var VarElo = (0 - Exig)/5;
-                MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-                MyElo = Math.round(MyElo);
-                OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-                OpElo = Math.round(OpElo);
+                if (Rated == 'Rated'){
+                    var Dif = MyElo - OpElo;
+                    var Exig = CalcularExigencia(Dif);
+                    VarElo = (0 - Exig)/5;
+                    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+                    MyElo = Math.round(MyElo);
+                    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+                    OpElo = Math.round(OpElo);
+                }else{
+                    VarElo = 0;
+                }
 
                 socket.emit('LostByTime',{PlayRoom:PlayRoom});
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
@@ -305,6 +342,9 @@ function FormatearMilisegundos(Milisegundos){
 }
 
 function WinByTime(data){
+    
+    var VarElo;
+    
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
@@ -313,13 +353,17 @@ function WinByTime(data){
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (100 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (100 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
@@ -328,6 +372,9 @@ function WinByTime(data){
 }
 
 function DrawByTime(data){
+
+    var VarElo;
+
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
@@ -336,13 +383,17 @@ function DrawByTime(data){
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
 
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (50 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (50 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
@@ -352,6 +403,8 @@ function DrawByTime(data){
 
 function LostByResign(){
 
+    var VarElo;
+    
     socket.emit('LostByResign',{PlayRoom:PlayRoom});
         
     if (MiTurno){
@@ -367,13 +420,17 @@ function LostByResign(){
     $('#lbResultadoJugador').text('0');
     $('#lbResultadoOponente').text('1');
 
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (0 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (0 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
@@ -382,6 +439,9 @@ function LostByResign(){
 }
 
 function WinByResign(data){
+    
+    var VarElo;
+    
     if (MiTurno){
         StopTimer('Abajo');
     }else{
@@ -396,17 +456,58 @@ function WinByResign(data){
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (100 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (100 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
     $('#ResultMessage').text('You have won the game by resign. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
+    $('#DialogMessage').dialog('open');
+}
+
+function DiscPlaying(data){
+    
+    var VarElo;
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#btOfrecerTablas').hide();
+    $('#btResign').hide();
+    $('#btMain').show();
+    ResetBotones();
+    
+    $('#lbResultadoJugador').text('1');
+    $('#lbResultadoOponente').text('0');
+
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (100 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+    socket.emit('UpdateStatusDesc',{MyName:data.PlayerName,MyElo:OpElo});
+
+    $('#ResultMessage').text('You have won the game by disconnection. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
 
@@ -443,6 +544,8 @@ function OfrecerTablasBack(){
 
 function AceptarTablas(){
     
+    var VarElo;
+    
     $('#OfrecerTablas2').hide();
     $('#btResign').hide();
     $('#btMain').show();
@@ -455,13 +558,18 @@ function AceptarTablas(){
 
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (50 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (50 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     var cVarElo;
     if (VarElo >= 0){
@@ -480,6 +588,8 @@ function AceptarTablas(){
 
 function AceptarTablasBack(data){
 
+    var VarElo;
+    
     $('#OfrecerTablas').hide();
     //$('#OfrecerTablas2').hide();
     $('#btResign').hide();
@@ -493,13 +603,18 @@ function AceptarTablasBack(data){
 
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
-    var Dif = MyElo - OpElo;
-    var Exig = CalcularExigencia(Dif);
-    var VarElo = (50 - Exig)/5;
-    MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
-    MyElo = Math.round(MyElo);
-    OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
-    OpElo = Math.round(OpElo);
+
+    if (Rated == 'Rated'){
+        var Dif = MyElo - OpElo;
+        var Exig = CalcularExigencia(Dif);
+        VarElo = (50 - Exig)/5;
+        MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+        MyElo = Math.round(MyElo);
+        OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+        OpElo = Math.round(OpElo);
+    }else{
+        VarElo = 0;
+    }
 
     var cVarElo;
     if (VarElo >= 0){

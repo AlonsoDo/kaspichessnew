@@ -49,6 +49,9 @@ function CancelarRetoBack(data){
 function AceptarRetoBack(data){
     var ColorSide;
     var Flag;
+
+    //alert(data.Rated)
+    Rated = data.Rated;
     
     $('#ContenedorRetos').hide();
     $('#ContenedorTablero').show();
@@ -56,6 +59,7 @@ function AceptarRetoBack(data){
     $('#btAbortarPartida').show();
     $('#btCrearReto').hide();
     $('#DivPrivateChat').html('');
+    $('#DivGame').html('');
     
     if (MyName == data.MyName){
         TiempoPartida = data.Minutes * 60000;
@@ -104,7 +108,7 @@ function AceptarRetoBack(data){
         $('#ImgFlagOponente').prop('title',data.CountryLong);
         $('#ImgFlagJugador').prop('title',cCountryLong);
 
-        socket.emit('UpdateStatus',{MyName:data.MyName,Status:'Playing'});
+        socket.emit('UpdateStatus',{MyName:data.MyName,Status:'Playing',PlayRoom:PlayRoom});
         socket.emit('Welcome',{MyName:data.MyName,Welcome:cWelcome,PlayRoom:PlayRoom});
     }
 }
@@ -128,6 +132,7 @@ function SetValuesBack(data){
     $('#btCrearReto').hide();
     $('#btAbortarPartida').show();
     $('#DivPrivateChat').html('');
+    $('#DivGame').html('');
     
     PlayRoom = data.Room;
     TiempoPartida = data.Minutes * 60000;
@@ -164,7 +169,7 @@ function SetValuesBack(data){
     $('#ImgFlagOponente').prop('title',data.CountryLong);
     $('#ImgFlagJugador').prop('title',cCountryLong);
 
-    socket.emit('UpdateStatus',{MyName:data.OpName,Status:'Playing'});
+    socket.emit('UpdateStatus',{MyName:data.OpName,Status:'Playing',PlayRoom:PlayRoom});
     socket.emit('Welcome',{MyName:data.OpName,Welcome:cWelcome,PlayRoom:PlayRoom});
 }
 
