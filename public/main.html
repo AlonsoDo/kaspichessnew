@@ -55,6 +55,7 @@
          var MySocketId;
          var RoomReto;
          var PlayRoom;
+         var GameId;
          
          $(document).ready(function(){
 
@@ -100,7 +101,11 @@
             socket.on('LoadIniDataBack',function(data){
                //alert(data.PlayerIniData)
                LoadIniDataBack(data);
-            });   
+            }); 
+            
+            socket.on('GameIdBack',function(data){
+               GameId = data.GameId;               
+            });
 
             socket.on('PlayersOnLine',function(data){
                $('#DivGeneralChat').append('<span style="color:black; font-size:16px; font-family:Arial,Helvetica,sans-serif; font-weight:bold">'+ 
@@ -170,7 +175,9 @@
             $('#btSendMensagePrivateChat').button();
             $('#btStats').button(); 
             $('#btSetting').button();   
-            $('#btReloadPlayers').button();       
+            $('#btReloadPlayers').button(); 
+            $('#btReloadGames').button();
+            $('#btShareChessClub').button();      
 
             $('#btSendMensageGeneralChat').on('click',function(){
                socket.emit('SendMensageGeneralChat',{PlayerName:MyName,ChatText:$('#TextMensageGeneralChat').val()});
@@ -212,6 +219,7 @@
             jQuery('#GridRetos').addClass('myclass');
 
             IniGridPlayers();
+            IniGridGames();
 
             $('#Tabs').tabs();
 
@@ -277,6 +285,10 @@
                socket.emit('Stats',{PlayerName:MyName});              
             });
 
+            $('#btShareChessClub').on('click',function(){
+               window.open('https://sharechessclub.herokuapp.com/demos/','_blank');              
+            });
+
             socket.on('StatsBack',function(data){               
                ShowStats(data);              
             });
@@ -289,6 +301,10 @@
                socket.emit('LoadPlayers',{});
             });
 
+            $('#btReloadGames').on('click',function(){
+               socket.emit('LoadGames',{});
+            });
+
             socket.on('LoadSettingBack',function(data){               
                LoadSettingBack(data);                          
             });
@@ -298,12 +314,19 @@
                // Players
                if (newIndex == 1){
                   socket.emit('LoadPlayers',{});
+               }else if (newIndex == 2){
+                  socket.emit('LoadGames',{});
                }
             });
 
             socket.on('LoadPlayersBack',function(data){               
                console.log(data) 
                LoadPlayersBack(data);                            
+            });
+
+            socket.on('LoadGamesBack',function(data){               
+               console.log(data) 
+               LoadGamesBack(data);                            
             });
 
             socket.on('DiscPlaying',function(data){               
@@ -318,7 +341,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.4 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.6 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -392,8 +415,10 @@
                      </div>
                   </div>
                   <div id="tabs-3">
-                     <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
-                     <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+                     <table id="GridGames"></table>
+                     <div style="background-color:#daa351; border:1px black solid; width:514px; height:52px;">
+                        <button id="btReloadGames" style="padding:4px 4px 4px 4px; float:left; font-size:18px; font-weight:bold; margin-top:10px; margin-left:16px;" title="Reload games data">Refresh</button>
+                     </div>
                   </div>
                   <div id="tabs-4">
                      <div id="DivGame" style="border:0px black solid; position:relative; height:352px; width:514px; overflow-x:hidden; overflow-y:scroll;">
@@ -432,6 +457,8 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px; float:left;">
             <button style="width:120px; float:left; margin-top:12px; margin-left:12px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btStats" title="Show Stats of the player" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-chart-bars">icon</span>Stats</button>
             <button style="width:140px; float:left; margin-top:12px; margin-left:12px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btSetting" title="Show Setting of the player" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-settings">icon</span>Setting</button>
+            <button style="width:200px; float:left; margin-top:12px; margin-left:12px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btShareChessClub" title="Go to ShareChessClub web" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-persons">icon</span>ShareChessClub</button>
+            <label style="color:white; margin-left:30px; margin-top:20px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Contact: alonso.caspi@gmail.com</label>								
          </div>
          <div id="DialogMessage" title="Information">
             <p id="ResultMessage"></p>

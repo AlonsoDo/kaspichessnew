@@ -60,36 +60,57 @@
 
                 
                 $('#btPlayAsGuest').on('click',function(){
-                    window.location = 'http://localhost:3000/main.html?name=Guest';
+                    //window.location = 'http://localhost:3000/main.html?name=Guest';
+                    window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name=Guest';
                 });
                 
                 $('#btLogin').on('click',function(){
-                    socket.emit('TryToLogin',{MyName:$('#NickName').val(),PassWord:$('#Password').val()})
+                    socket.emit('TryToLogin',{MyName:$('#NickName').val(),PassWord:$('#Password').val()});
                 });
 
                 socket.on('LoginBack',function(data){
                     if (data.Error){
-                        $('#Message').text('Error trying to login. NickName o PassWord inconrect.')
+                        $('#Message').text('Error trying to login. NickName o PassWord inconrect.');
                         $('#DialogMessage').dialog('open');
                     }else{
-                        window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val();
+                        //window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val();
+                        window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+$('#NickName').val();
                     }                    
                 });
 
                 socket.on('CreateNewAcountBack',function(data){
                     //Si error
                     if (data.Error){
-                        $('#Message').text('Server error.')
+                        $('#Message').text('Server error.');
                         $('#DialogMessage').dialog('open');
                     }
-                });    
+                });
+                
+                socket.on('ForgotPassBack',function(data){
+                    //Si error
+                    if (data.Error){
+                        $('#Message').text('Server error.');                        
+                    }else{
+                        $('#Message').text('Check you email box.');
+                    }
+                    $('#DialogMessage').dialog('open');
+                });
 
                 $('#SignUp').on('click',function(){
                     $('#DialogCreateAcount').dialog('open');
                 });
+
+                $('#ForgotPass').on('click',function(){
+                    if ($('#NickName').val()==''){
+                        $('#Message').text('You must type your NickName.');
+                        $('#DialogMessage').dialog('open');
+                    }else{
+                        socket.emit('ForgotPass',{MyName:$('#NickName').val()});
+                    }                    
+                });
                 
                 $('#LinkSCC').on('click',function(){
-                    window.open('http://sharechessclub.com/','_blank');
+                    window.open('https://sharechessclub.herokuapp.com/demos/','_blank');
                 });
 
                 function CreateNewAcount(){
@@ -139,7 +160,7 @@
             <input type="text" id="NickName" maxlength="20" placeholder="Type NickName" value="" style="margin-top:12px; margin-left:54px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;">
             <div style="margin-top:30px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">PassWord</div>
             <input type="password" id="Password" maxlength="20" placeholder="Type PassWord" value="" style="margin-top:12px; margin-left:54px; width:280px; color:#d35d3f; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:24px;">
-            <div id='ForgotPass' style="margin-top:20px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;"><a href="#">Forgot your Password?</a></div>
+            <div id="ForgotPass" style="margin-top:20px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;"><a href="#">Forgot your Password?</a></div>
 	        <button id="btLogin" class="button" style="font-size:22px; margin-top:20px; margin-left:54px;">LogIn</button>
             <button id="btPlayAsGuest" class="button" style="font-size:22px; margin-top:20px; margin-left:11px;">Play as Guest</button>
             <div style="float:left; margin-top:20px; margin-left:54px; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:15px;">New to KaspiChess?</div>

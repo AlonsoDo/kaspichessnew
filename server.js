@@ -4,11 +4,12 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var favicon = require('serve-favicon');
 var mysql = require('mysql2');
+var nodemailer = require('nodemailer');
 
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -114,6 +115,65 @@ io.on('connection', function(socket){
       socket.emit('PlayersOnLine',{aPlayers:aPlayers});
    });   
    
+   socket.on('ForgotPass',function(data){
+      console.log(data)
+
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM autentificacion WHERE User='"+data.MyName+"'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);
+         // No encuentra al jugador
+         if (rows.length==0){
+            io.to(socket.id).emit('ForgotPassBack',{Error:true});
+         }else{
+            var NickName = rows[0].User;
+            var PassWord = rows[0].PassWord;
+            var Email = rows[0].Email;
+
+            var transporter = nodemailer.createTransport({
+               service: "hotmail",
+               auth: {
+                   user: "alonso_caspi@hotmail.com",
+                   pass: "CaspiAutentico2"
+               }
+            });
+            
+            // Email data
+            var mailOptions = {
+               from: 'KaspiChess <alonso_caspi@hotmail.com>',
+               to: Email,
+               subject: 'Here is your password',
+               text: "Hello Friend \r\n" +
+                     " \r\n" +
+                     " Forgot your data? Do not worry.\r\n" +
+                     " Here are.\r\n" +
+                     " \r\n" +
+                     " Your NickName: " + NickName + "\r\n" +
+                     " Your Password: " + PassWord + "\r\n" +
+                     " \r\n" +
+                     " I hope you continue enjoying at KaspiChess.\r\n" +
+                     " Best regards.",
+            };
+            
+            // Send the email
+            transporter.sendMail(mailOptions, (error, info) => {
+               if (error) {
+               console.error('Error sending email:', error);
+               } else {
+               console.log('Email sent:', info.response);
+               }
+            });
+            
+            io.to(socket.id).emit('ForgotPassBack',{Error:false});
+         }                        
+         connection.release();        
+         });
+      });
+   });   
+   
    socket.on('TryToLogin',function(data){
       console.log('TryToLogin')
       console.log(data)
@@ -179,6 +239,22 @@ io.on('connection', function(socket){
 
    });
 
+   socket.on('LoadGames',function(data){
+      
+      pool.getConnection(function(err,connection){      
+         connection.query("SELECT * FROM games ORDER BY number DESC LIMIT 50",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         console.log('Number of rows: '+rows.length);         
+         io.to(socket.id).emit('LoadGamesBack',{GamesData:rows});         
+         connection.release();        
+         });
+      });
+
+   });
+
    socket.on('LoadSetting',function(data){
       console.log(data.PlayerName)
 
@@ -217,6 +293,21 @@ io.on('connection', function(socket){
       
       pool.getConnection(function(err,connection){      
          connection.query("UPDATE autentificacion SET Color='" + data.Color + "' , Minutes='" + data.Minutes + "' , Seconds='" + data.Seconds + "' , Rated='" + data.Rated + "' , MinElo='" + data.Min + "' , MaxElo='" + data.Max + "' WHERE User='" + data.PlayerName + "'",function(err,rows){
+         if (err){
+           console.log('Error: ' + err.message);
+           throw err;
+         } 
+         connection.release();        
+         });
+      });
+
+   });
+
+   socket.on('UpdateStatusGame',function(data){
+      console.log(data.Resultado)
+      
+      pool.getConnection(function(err,connection){      
+         connection.query("UPDATE games SET status='" + data.Resultado + "' WHERE number='" + data.GameId + "'",function(err,rows){
          if (err){
            console.log('Error: ' + err.message);
            throw err;
@@ -270,7 +361,26 @@ io.on('connection', function(socket){
          });
       });
 
-   });   
+   });  
+   
+   socket.on('RegisterGame',function(data){
+            
+      var Cuando = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      pool.getConnection(function(err,connection){      
+         connection.query("INSERT INTO games(cuando,status,whitename,blackname,whiteelo,blackelo,timing,room) VALUES ('"+Cuando+"','"+data.Status+"','"+data.WhiteName+"','"+data.BlackName+"','"+data.WhiteElo+"','"+data.BlackElo+"','"+data.Timing+"','"+data.Room+"')",function(err, result, fields){
+         if (err){
+           console.log('Error: ' + err.message);           
+           throw err;
+         }else{
+            console.log('Game: ' + result.insertId);
+            io.to(data.Room).emit('GameIdBack',{GameId:result.insertId});
+         } 
+         connection.release();        
+         });
+      });
+
+   });  
    
    socket.on('SendPos',function(data){
       console.log('Play Room: ' + data.PlayRoom)

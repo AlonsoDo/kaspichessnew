@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com
--- Versión del servidor:         10.4.30-MariaDB-log - Source distribution
+-- Versión del servidor:         10.4.32-MariaDB-log - Source distribution
 -- SO del servidor:              Linux
 -- HeidiSQL Versión:             11.0.0.5919
 -- --------------------------------------------------------
@@ -45,14 +45,12 @@ CREATE TABLE IF NOT EXISTS `games` (
   `number` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `cuando` datetime DEFAULT NULL,
   `status` varchar(10) DEFAULT NULL,
-  `mostrar` varchar(1) DEFAULT NULL,
   `whitename` varchar(20) DEFAULT NULL,
   `blackname` varchar(20) DEFAULT NULL,
   `whiteelo` smallint(5) unsigned DEFAULT NULL,
   `blackelo` smallint(5) unsigned DEFAULT NULL,
-  `whiteid` varchar(40) DEFAULT NULL,
-  `blackid` varchar(40) DEFAULT NULL,
   `timing` varchar(6) DEFAULT NULL,
+  `room` varchar(6) DEFAULT NULL,
   PRIMARY KEY (`number`)
 ) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 

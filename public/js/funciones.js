@@ -7,6 +7,28 @@ var cCountry = 'AD';
 var cCountryLong = 'Andorra'; 
 var WhoPlayer; 
 
+function IniGridGames(){
+	jQuery('#GridGames').jqGrid({
+		datatype: 'local',
+		height: 285,
+		width:513,
+	   	colNames:['White','Rating','Black','Rating','Status','Timing','Room'],
+	   	colModel:[          {name:'White',index:'White',width:150},
+                            {name:'RatingWhite',index:'RatingWhite',width:70,align:'center'},	 
+                            {name:'Black',index:'Black',width:150},
+							{name:'RatingBlack',index:'RatingBlack',width:70,align:'center'},
+                            {name:'Status',index:'Status',width:110,align:'center'},
+                            {name:'Timing',index:'Timing',width:60,align:'center'},
+                            {name:'Room',width:50,hidden:true}
+                            ],
+		onSelectRow: function(id){
+		    var rowData = jQuery(this).getRowData(id); 
+            var Room = rowData['Room']; 
+			alert(Room)                   
+		}
+    });
+}
+
 function IniGridPlayers(){
 	jQuery('#GridPlayers').jqGrid({
 		datatype: 'local',
@@ -52,6 +74,23 @@ function LoadPlayersBack(data){
     }
 
 	$('#lbPlayersOnLine').text('( '+data.Players.length+' )');
+}
+
+function LoadGamesBack(data){
+	var WhiteName,WhiteElo,BlackName,BlackElo,Status,Timing,Room;
+
+	$('#GridGames').jqGrid('clearGridData');
+
+	for(var i=0;i<data.GamesData.length;i++){
+		WhiteName = data.GamesData[i].whitename;
+		WhiteElo = data.GamesData[i].whiteelo;
+		BlackName = data.GamesData[i].blackname;
+		BlackElo = data.GamesData[i].blackelo;
+		Status = data.GamesData[i].status;
+		Timing = data.GamesData[i].timing;
+		Room = data.GamesData[i].room;
+		jQuery('#GridGames').jqGrid('addRowData',i+1,{ White:WhiteName , RatingWhite:WhiteElo , Black:BlackName , RatingBlack:BlackElo , Status:Status , Timing:Timing , Room:Room});
+    }	
 }
 
 function LoadIniDataBack(data){

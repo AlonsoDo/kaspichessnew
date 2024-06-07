@@ -50,8 +50,18 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
+                var Resultado;
+                if (Turno() == 'White'){
+                    Resultado = '1-0';
+                }else{
+                    Resultado = '0-1';
+                }
+                socket.emit('UpdateStatusGame',{Resultado:Resultado,GameId:GameId});
+
+                $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+                
                 $('#ResultMessage').text('You have won the game by CheckMate. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
-                $('#DialogMessage').dialog('open'); 
+                $('#DialogMessage').dialog('open');                 
 
             }else if (chess.isDraw()){
 
@@ -71,7 +81,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 }
 
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+                socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
+                $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+                
                 var cVarElo;
                 if (VarElo >= 0){
                     cVarElo = '+' + VarElo;
@@ -143,6 +156,14 @@ function SendPosBack(data){
         
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
+        var Resultado;
+        if (Turno() == 'White'){
+            Resultado = '1-0';
+        }else{
+            Resultado = '0-1';
+        }
+        $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+                
         $('#ResultMessage').text('You have lost the game by CheckMate. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
         $('#DialogMessage').dialog('open');  
 
@@ -165,6 +186,8 @@ function SendPosBack(data){
 
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
+        $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+        
         var cVarElo;
         if (VarElo >= 0){
             cVarElo = '+' + VarElo;
@@ -253,7 +276,10 @@ function UpdateTimer(Posicion) {
 
                 socket.emit('DrawByTime',{PlayRoom:PlayRoom});
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+                socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
+                $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
                 $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
                 $('#DialogMessage').dialog('open');
             }else{            
@@ -283,6 +309,16 @@ function UpdateTimer(Posicion) {
                 socket.emit('LostByTime',{PlayRoom:PlayRoom});
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
+                var Resultado;
+                if (Turno() == 'White'){
+                    Resultado = '1-0';
+                }else{
+                    Resultado = '0-1';
+                }
+                socket.emit('UpdateStatusGame',{Resultado:Resultado,GameId:GameId});
+
+                $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
                 $('#ResultMessage').text('You have lost the game by time. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
                 $('#DialogMessage').dialog('open');
             }
@@ -367,6 +403,14 @@ function WinByTime(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
+    var Resultado;
+    if (Turno() == 'White'){
+        Resultado = '1-0';
+    }else{
+        Resultado = '0-1';
+    }
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
     $('#ResultMessage').text('You have won the game by time. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
     $('#DialogMessage').dialog('open'); 
 }
@@ -397,6 +441,8 @@ function DrawByTime(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+        
     $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
     $('#DialogMessage').dialog('open'); 
 }
@@ -434,6 +480,16 @@ function LostByResign(){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
+    var Resultado;
+    if (Turno() == 'White'){
+        Resultado = '0-1';
+    }else{
+        Resultado = '1-0';
+    }
+    socket.emit('UpdateStatusGame',{Resultado:Resultado,GameId:GameId});
+
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
     $('#ResultMessage').text('You have resigned the game. Your new rating is: ' + MyElo + ' (' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
@@ -470,6 +526,14 @@ function WinByResign(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
+    var Resultado;
+    if (Turno() == 'White'){
+        Resultado = '0-1';
+    }else{
+        Resultado = '1-0';
+    }
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
     $('#ResultMessage').text('You have won the game by resign. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
@@ -507,6 +571,16 @@ function DiscPlaying(data){
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
     socket.emit('UpdateStatusDesc',{MyName:data.PlayerName,MyElo:OpElo});
 
+    var Resultado;
+    if (Turno() == 'White'){
+        Resultado = '1-0';
+    }else{
+        Resultado = '0-1';
+    }
+    socket.emit('UpdateStatusGame',{Resultado:Resultado,GameId:GameId});
+   
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+    
     $('#ResultMessage').text('You have won the game by disconnection. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
     $('#DialogMessage').dialog('open');
 }
@@ -580,7 +654,10 @@ function AceptarTablas(){
         
     socket.emit('AceptarTablas',{PlayRoom:PlayRoom});
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
-    
+    socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
+
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+        
     $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
     $('#DialogMessage').dialog('open');    
         
@@ -624,7 +701,9 @@ function AceptarTablasBack(data){
     }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
-        
+
+    $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+            
     $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
     $('#DialogMessage').dialog('open');
 

@@ -85,6 +85,8 @@ function AceptarRetoBack(data){
             $('#lbRelojJugador').text(FormatearMilisegundos(TiempoPartida));
             MiTurno = true;            
             socket.emit('SetValues',{CountryLong:cCountryLong,Flag:cCountry,MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Blancas',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});            
+            var Timing = data.Minutes + '/' + data.Seconds;
+            socket.emit('RegisterGame',{Status:'Playing',WhiteName:data.MyName,BlackName:data.OpName,WhiteElo:MyElo,BlackElo:OpElo,Timing:Timing,Room:data.Room});
         }else{ 
             $('#lbRatingOponente').text(data.MyElo);
             OpElo = data.MyElo;
@@ -96,6 +98,8 @@ function AceptarRetoBack(data){
             board1.flip();
             IsFliped = true;
             socket.emit('SetValues',{CountryLong:cCountryLong,Flag:cCountry,MyName:data.MyName,OpName:data.OpName,Room:data.Room,Color:'Negras',MyElo:MyElo,Minutes:data.Minutes,Seconds:data.Seconds});
+            var Timing = data.Minutes + '/' + data.Seconds;
+            socket.emit('RegisterGame',{Status:'Playing',WhiteName:data.OpName,BlackName:data.MyName,WhiteElo:OpElo,BlackElo:MyElo,Timing:Timing,Room:data.Room});
         }
         $('#lbNombreJugador').text(data.MyName);
         $('#lbNombreOponente').text(data.OpName);
