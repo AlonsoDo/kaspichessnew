@@ -47,9 +47,14 @@ function CancelarRetoBack(data){
 }
 
 function AceptarRetoBack(data){
+    
     var ColorSide;
     var Flag;
 
+    if (nSound == 1){
+        ion.sound.play('comienzopartida');
+    }
+    
     //alert(data.Rated)
     Rated = data.Rated;
     
@@ -127,7 +132,12 @@ function SortearColor(){
 }
 
 function SetValuesBack(data){
+    
     var Flag;
+
+    if (nSound == 1){
+        ion.sound.play('comienzopartida');
+    }
     
     socket.emit('CancelarReto',{MyName:data.OpName})
     socket.emit('CancelarReto',{MyName:data.MyName})

@@ -41,6 +41,7 @@ function IniGridPlayers(){
                             {name:'Country',width:24,fixed:true,align:'center',
                                 formatter: function(cellvalue, options, rowObject){
                                     var cTitle = rowObject['Title'];
+									cellvalue = cellvalue.toLowerCase();
                                     return "<img src='res/img/flags/16/"+cellvalue+".png' title='"+cTitle+"' alt='Country' />";
                                 }                             
                             },
@@ -124,7 +125,8 @@ function LoadIniDataBack(data){
 	nSound = aPlayerIniData[0].Sound;
 	cWelcome = aPlayerIniData[0].Welcome;
 	cCountry = aPlayerIniData[0].Country; 
-	cCountryLong = aPlayerIniData[0].Alt;
+	cCountryLong = aPlayerIniData[0].Alt;	
+
 }
 
 function SendMensageGeneralChatBack(data){

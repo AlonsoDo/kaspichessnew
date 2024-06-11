@@ -6,6 +6,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
     
     try {
         if (MiTurno){
+
+            if (nSound == 1){
+                ion.sound.play('move');
+            }
             
             chess.move({ from:source, to:target, promotion:'q' }); 
             StopTimer('Abajo');
@@ -33,6 +37,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
             
             if (chess.isCheckmate()){                
 
+                if (nSound == 1){
+                    ion.sound.play('win');
+                }
+                
                 $('#lbResultadoJugador').text('1');
                 $('#lbResultadoOponente').text('0');
 
@@ -64,6 +72,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 $('#DialogMessage').dialog('open');                 
 
             }else if (chess.isDraw()){
+
+                if (nSound == 1){
+                    ion.sound.play('draw');
+                }
 
                 $('#lbResultadoJugador').text('1/2');
                 $('#lbResultadoOponente').text('1/2');
@@ -119,6 +131,10 @@ function onSnapEnd(){
 function SendPosBack(data){
 
     var VarElo;
+
+    if (nSound == 1){
+        ion.sound.play('move');
+    }
     
     chess.move({ from:data.source,to:data.target,promotion:data.promotion});
     board1.position(chess.fen());
@@ -138,6 +154,10 @@ function SendPosBack(data){
     }
     
     if (chess.isCheckmate()){
+
+        if (nSound == 1){
+            ion.sound.play('lost');
+        }
 
         $('#lbResultadoJugador').text('0');
         $('#lbResultadoOponente').text('1');
@@ -168,6 +188,10 @@ function SendPosBack(data){
         $('#DialogMessage').dialog('open');  
 
     }else if (chess.isDraw()){
+
+        if (nSound == 1){
+            ion.sound.play('draw');
+        }
 
         $('#lbResultadoJugador').text('1/2');
         $('#lbResultadoOponente').text('1/2');
@@ -257,6 +281,9 @@ function UpdateTimer(Posicion) {
                 $('#btResign').hide();
                 $('#btMain').show();
                 ResetBotones();
+                if (nSound == 1){
+                    ion.sound.play('draw');
+                }
                 $('#lbResultadoJugador').text('1/2');
                 $('#lbResultadoOponente').text('1/2');
                 MiTurno = false;
@@ -289,6 +316,9 @@ function UpdateTimer(Posicion) {
                 $('#btResign').hide();
                 $('#btMain').show();
                 ResetBotones();
+                if (nSound == 1){
+                    ion.sound.play('lost');
+                }
                 $('#lbResultadoJugador').text('0');
                 $('#lbResultadoOponente').text('1');
                 MiTurno = false;
@@ -385,6 +415,10 @@ function WinByTime(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
+
+    if (nSound == 1){
+        ion.sound.play('win');
+    }
     
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
@@ -423,6 +457,10 @@ function DrawByTime(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
+    
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
     
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
@@ -463,6 +501,9 @@ function LostByResign(){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
+    if (nSound == 1){
+        ion.sound.play('lost');
+    }
     $('#lbResultadoJugador').text('0');
     $('#lbResultadoOponente').text('1');
 
@@ -508,7 +549,9 @@ function WinByResign(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
-    
+    if (nSound == 1){
+        ion.sound.play('win');
+    }
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -552,7 +595,9 @@ function DiscPlaying(data){
     $('#btResign').hide();
     $('#btMain').show();
     ResetBotones();
-    
+    if (nSound == 1){
+        ion.sound.play('win');
+    }
     $('#lbResultadoJugador').text('1');
     $('#lbResultadoOponente').text('0');
 
@@ -607,6 +652,9 @@ function OfrecerTablas(){
     $('#btOfrecerTablas').hide();
     $('#OfrecerTablas').show();
     socket.emit('OfrecerTablas',{PlayRoom:PlayRoom});
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
 }
 
 function OfrecerTablasBack(){
@@ -614,6 +662,9 @@ function OfrecerTablasBack(){
     $('#OfrecerTablas').hide();
     $('#OfrecerTablas2').show();
     OfreciendoTablas = true;
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
 }
 
 function AceptarTablas(){
@@ -632,6 +683,9 @@ function AceptarTablas(){
 
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
 
     if (Rated == 'Rated'){
         var Dif = MyElo - OpElo;
@@ -680,7 +734,10 @@ function AceptarTablasBack(data){
 
     $('#lbResultadoJugador').text('1/2');
     $('#lbResultadoOponente').text('1/2');
-
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
+    
     if (Rated == 'Rated'){
         var Dif = MyElo - OpElo;
         var Exig = CalcularExigencia(Dif);
