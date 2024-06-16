@@ -36,10 +36,14 @@
             font-size:14px;
          }
          
-         table{
+         table {
             font-family:Arial,Helvetica,serif;
             font-size:14px;
             font-weight:bold;
+         }
+
+         .highlight {
+            box-shadow: inset 0 0 3px 3px yellow;
          }
       </style>
       <script>
@@ -60,7 +64,7 @@
          
          $(document).ready(function(){
 
-            socket = io();
+            socket = io({ reconnection: false });
 
              // init bunch of sounds
              ion.sound({
@@ -108,22 +112,29 @@
                             'If you register you will begin with 1800 of rating' + '</span><br>');
                $('#DivGeneralChat').animate({scrollTop:$('#DivGeneralChat').prop('scrollHeight')},500);
                socket.emit('EnviarNombre',{PlayerName:MyName});
+               
+               // Posicion inicial
+               var config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd,onMoveEnd:onMoveEnd};
+               board1 = ChessBoard('board1',config);
             }else{
                MyName = name;
                socket.emit('LoadIniData',{PlayerName:MyName});
             }
 
-            $('#lbJugadorConectado').text(MyName);
-            
-            // Posicion inicial
-            var config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd};
-            board1 = ChessBoard('board1',config);
+            $('#lbJugadorConectado').text(MyName);            
 
             $('#ContenedorTablero').hide();            
             
             socket.on('LoadIniDataBack',function(data){
-               //alert(data.PlayerIniData)
                LoadIniDataBack(data);
+               // Posicion inicial
+               var config;
+               if (nCoordenadas == 1){
+                  config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd,onMoveEnd:onMoveEnd};
+               }else{
+                  config = {position:'start',draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd,onMoveEnd:onMoveEnd,showNotation:false};
+               }               
+               board1 = ChessBoard('board1',config);
             }); 
             
             socket.on('GameIdBack',function(data){
@@ -253,6 +264,7 @@
             IniDialogStats();
             IniDialogNewGame();
             IniDialogSetting();
+            IniDialogReconnect();
 
             socket.on('ConnectToRoom',function(data){               
                // General Room
@@ -357,7 +369,11 @@
 
             socket.on('DiscPlaying',function(data){               
                DiscPlaying(data)                           
-            });            
+            });  
+            
+            socket.on('disconnect', function(){
+               $("#DialogReconnect").dialog('open');
+            });
 
          });
       </script>
@@ -367,7 +383,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.7 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.8 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -488,6 +504,9 @@
          </div>
          <div id="DialogMessage" title="Information">
             <p id="ResultMessage"></p>
+         </div>
+         <div id="DialogReconnect" title="Information">
+            <p id="ReconnectMessage">You have lost the connection.</p>
          </div>
          <div id="DialogStats" title="Stats">
             <p id="ResultMessageStats"></p>

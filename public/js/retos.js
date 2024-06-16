@@ -1,5 +1,6 @@
 var MiTurno;
 var IsFliped = false;
+var ColorSide;
 
 function IniGridRetos(){
 
@@ -48,7 +49,7 @@ function CancelarRetoBack(data){
 
 function AceptarRetoBack(data){
     
-    var ColorSide;
+    //var ColorSide;
     var Flag;
 
     if (nSound == 1){
@@ -153,6 +154,7 @@ function SetValuesBack(data){
     TiempoRestanteArriba = TiempoPartida;
     TiempoRestanteAbajo = TiempoPartida;
     SegundosIncremento = data.Seconds * 1000;
+    ColorSide = data.Color;
     if(data.Color == 'Blancas'){
         $('#lbRatingOponente').text(data.MyElo);
         OpElo = data.MyElo;

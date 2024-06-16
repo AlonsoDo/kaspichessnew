@@ -157,6 +157,20 @@ function IniDialogMessage(){
     });
 }
 
+function IniDialogReconnect(){
+    $('#DialogReconnect').dialog({
+      autoOpen:false,  
+      modal: true,
+        buttons: {
+          'Reconnect': function() {
+            $(this).dialog('close');
+			window.location = 'http://localhost:3000/main.html?name='+MyName;
+            //window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+MyName;
+          }
+        }
+    });
+}
+
 function IniDialogStats(){
     $('#DialogStats').dialog({
       autoOpen:false,  
@@ -277,6 +291,7 @@ function LoadSettingBack(data){
 }
 
 function SaveSetting(){
+		
 	if ($('#cbShowCoord').is(':checked')){
 		nCoordenadas = 1;
 	}else{
@@ -302,6 +317,18 @@ function SaveSetting(){
 	cCountryLong = $('#country option:selected').text();
 
 	socket.emit('SaveSetting',{PlayerName:MyName,Coordenadas:nCoordenadas,Highlight:nHighlight,Promote:nPromote,Sound:nSound,Welcome:cWelcome,Country:cCountry,CountryLong:cCountryLong});               
+
+	var config;
+    if (nCoordenadas == 1){
+        config = {position:chess.fen(),draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd,onMoveEnd:onMoveEnd,showNotation:true};
+    }else{
+        config = {position:chess.fen(),draggable:true,onDrop:onDrop,onSnapEnd:onSnapEnd,onMoveEnd:onMoveEnd,showNotation:false};
+    }               
+    board1 = ChessBoard('board1',config);
+	if (IsFliped){
+		board1.flip();
+	}
+	
 }
 
 function numberOnly(id) {

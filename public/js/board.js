@@ -1,4 +1,9 @@
 var OfreciendoTablas = false;
+var squareClass = 'square-55d63';
+
+function onMoveEnd() {
+    //$('#board1').find('.square-' + squareToHighlight).addClass('highlight');
+}
 
 function onDrop (source, target, piece, newPos, oldPos, orientation){
     
@@ -7,6 +12,13 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
     try {
         if (MiTurno){
 
+            if (nHighlight == 1){
+                $('#board1').find('.' + squareClass).removeClass('highlight');
+                $('#board1').find('.square-' + source).addClass('highlight');
+                $('#board1').find('.square-' + target).addClass('highlight');
+                //squareToHighlight = target;
+            }
+            
             if (nSound == 1){
                 ion.sound.play('move');
             }
@@ -131,6 +143,13 @@ function onSnapEnd(){
 function SendPosBack(data){
 
     var VarElo;
+
+    if (nHighlight == 1){
+        $('#board1').find('.' + squareClass).removeClass('highlight');
+        $('#board1').find('.square-' + data.source).addClass('highlight');
+        $('#board1').find('.square-' + data.target).addClass('highlight');
+        //squareToHighlight = target;
+    }
 
     if (nSound == 1){
         ion.sound.play('move');
