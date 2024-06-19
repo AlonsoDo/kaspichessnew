@@ -164,8 +164,8 @@ function IniDialogReconnect(){
         buttons: {
           'Reconnect': function() {
             $(this).dialog('close');
-			window.location = 'http://localhost:3000/main.html?name='+MyName;
-            //window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+MyName;
+			//window.location = 'http://localhost:3000/main.html?name='+MyName;
+            window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+MyName;
           }
         }
     });

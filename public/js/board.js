@@ -1,5 +1,6 @@
 var OfreciendoTablas = false;
 var squareClass = 'square-55d63';
+var PrimeraJugada = true;
 
 function onMoveEnd() {
     //$('#board1').find('.square-' + squareToHighlight).addClass('highlight');
@@ -11,6 +12,8 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
     
     try {
         if (MiTurno){
+
+            PrimeraJugada = false;
 
             if (nHighlight == 1){
                 $('#board1').find('.' + squareClass).removeClass('highlight');
@@ -167,6 +170,7 @@ function SendPosBack(data){
     if (chess.isGameOver()){
         StopTimer('Abajo');
         $('#btOfrecerTablas').hide();
+        $('#DeclinarTablas').hide();
         $('#btResign').hide();
         $('#btMain').show();
         ResetBotones();        
@@ -282,6 +286,11 @@ function UpdateTimer(Posicion) {
     var VarElo;
 	
     ValorTiempoTranscurrido = ContadorTiempo();
+
+    if ((ValorTiempoTranscurrido >= 30000) && (PrimeraJugada == true)){
+        AbortedGameByServer();
+        return;
+    }
     
     if (Posicion=='Arriba') {
         $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba - ValorTiempoTranscurrido));         
@@ -504,6 +513,122 @@ function DrawByTime(data){
     $('#DialogMessage').dialog('open'); 
 }
 
+function AbortedGame(){
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#btAbortarPartida').hide();
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').hide();
+    $('#btAceptarTablas').hide();
+    $('#btDeclinarTablas').hide();
+    $('#btMain').show();
+
+    if (nSound == 1){
+        ion.sound.play('cancel');
+    }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    socket.emit('UpdateStatusGame',{Resultado:'Aborted',GameId:GameId});
+
+    socket.emit('AbortedGame',{PlayRoom:PlayRoom});
+
+    $('#ResultMessage').text('The game has been aborted')
+    $('#DialogMessage').dialog('open');
+    
+}
+
+function AbortedGameByServer(){
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#btAbortarPartida').hide();
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').hide();
+    $('#btAceptarTablas').hide();
+    $('#btDeclinarTablas').hide();
+    $('#btMain').show();
+
+    if (nSound == 1){
+        ion.sound.play('cancel');
+    }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    socket.emit('UpdateStatusGame',{Resultado:'Aborted',GameId:GameId});
+
+    socket.emit('AbortedGameByServer',{PlayRoom:PlayRoom});
+
+    $('#ResultMessage').text('The game has been aborted by the server.')
+    $('#DialogMessage').dialog('open');
+    
+}
+
+function AbortedGameBack(){
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#btOfrecerTablas').hide();
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').hide();
+    $('#btAceptarTablas').hide();
+    $('#btDeclinarTablas').hide();
+    $('#btResign').hide();
+    $('#btAbortarPartida').hide();
+    $('#btMain').show();
+
+    if (nSound == 1){
+        ion.sound.play('cancel');
+    }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    $('#ResultMessage').text('The game has been aborted')
+    $('#DialogMessage').dialog('open');
+    
+}
+
+function AbortedGameByServerBack(){
+    
+    if (MiTurno){
+        StopTimer('Abajo');
+    }else{
+        StopTimer('Arriba');
+    }
+
+    $('#btOfrecerTablas').hide();
+    $('#OfrecerTablas').hide();
+    $('#OfrecerTablas2').hide();
+    $('#btAceptarTablas').hide();
+    $('#btDeclinarTablas').hide();
+    $('#btResign').hide();
+    $('#btAbortarPartida').hide();
+    $('#btMain').show();
+
+    if (nSound == 1){
+        ion.sound.play('cancel');
+    }
+
+    socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    $('#ResultMessage').text('The game has been aborted by the server.')
+    $('#DialogMessage').dialog('open');
+    
+}
+
 function LostByResign(){
 
     var VarElo;
@@ -656,6 +781,7 @@ function GoToMain(){
     $('#ContenedorTablero').hide();
     $('#ContenedorRetos').show();
 
+    $('#DeclinarTablas').hide();
     $('#btMain').hide();
     $('#btCrearReto').show();
 
@@ -677,9 +803,13 @@ function OfrecerTablas(){
 }
 
 function OfrecerTablasBack(){
+    $('#btAbortarPartida').hide();
     $('#btOfrecerTablas').hide();
     $('#OfrecerTablas').hide();
     $('#OfrecerTablas2').show();
+    $('#btAceptarTablas').show();
+    $('#btDeclinarTablas').show();
+
     OfreciendoTablas = true;
     if (nSound == 1){
         ion.sound.play('draw');
@@ -690,6 +820,7 @@ function AceptarTablas(){
     
     var VarElo;
     
+    $('#btAbortarPartida').hide();
     $('#OfrecerTablas2').hide();
     $('#btResign').hide();
     $('#btMain').show();

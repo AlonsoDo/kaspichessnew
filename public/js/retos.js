@@ -52,6 +52,8 @@ function AceptarRetoBack(data){
     //var ColorSide;
     var Flag;
 
+    PrimeraJugada = true;
+
     if (nSound == 1){
         ion.sound.play('comienzopartida');
     }
@@ -118,7 +120,7 @@ function AceptarRetoBack(data){
         $('#ImgFlagOponente').prop('title',data.CountryLong);
         $('#ImgFlagJugador').prop('title',cCountryLong);
 
-        socket.emit('UpdateStatus',{MyName:data.MyName,Status:'Playing',PlayRoom:PlayRoom});
+        socket.emit('UpdateStatus',{MyName:data.MyName,MyElo:MyElo,Status:'Playing',PlayRoom:PlayRoom});
         socket.emit('Welcome',{MyName:data.MyName,Welcome:cWelcome,PlayRoom:PlayRoom});
     }
 }
@@ -135,6 +137,8 @@ function SortearColor(){
 function SetValuesBack(data){
     
     var Flag;
+
+    PrimeraJugada = true;
 
     if (nSound == 1){
         ion.sound.play('comienzopartida');
@@ -185,7 +189,7 @@ function SetValuesBack(data){
     $('#ImgFlagOponente').prop('title',data.CountryLong);
     $('#ImgFlagJugador').prop('title',cCountryLong);
 
-    socket.emit('UpdateStatus',{MyName:data.OpName,Status:'Playing',PlayRoom:PlayRoom});
+    socket.emit('UpdateStatus',{MyName:data.OpName,MyElo:MyElo,Status:'Playing',PlayRoom:PlayRoom});
     socket.emit('Welcome',{MyName:data.OpName,Welcome:cWelcome,PlayRoom:PlayRoom});
 }
 
