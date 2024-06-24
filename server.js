@@ -9,7 +9,7 @@ var nodemailer = require('nodemailer');
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -275,6 +275,14 @@ io.on('connection', function(socket){
    
    socket.on('SaveSetting',function(data){
       console.log(data.PlayerName)
+
+      for (var i = 0; i < aPlayers.length; i++){
+         if (aPlayers[i].PlayerName == data.PlayerName){
+            aPlayers[i].Flag = data.Country;
+            aPlayers[i].CountryLong = data.CountryLong;            
+            break;
+         }
+      }
       
       pool.getConnection(function(err,connection){      
          connection.query("UPDATE autentificacion SET Coordenadas='" + data.Coordenadas + "' , Highlight='" + data.Highlight + "' , Promote='" + data.Promote + "' , Sound='" + data.Sound + "' , Welcome='" + data.Welcome + "' , Country='" + data.Country + "' , Alt='" + data.CountryLong + "' WHERE User='" + data.PlayerName + "'",function(err,rows){

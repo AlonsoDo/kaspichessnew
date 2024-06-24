@@ -7,6 +7,38 @@ var cCountry = 'AD';
 var cCountryLong = 'Andorra'; 
 var WhoPlayer; 
 
+function IniDialogPromotion(){
+	$('#DialogPromotion').dialog({
+		width:310,
+		autoOpen:false,  
+		modal: true,
+		open: function() { $(".ui-dialog-titlebar-close").hide(); }
+	});
+}
+
+function DialogPromotion(){
+	$('#DialogPromotion').dialog('open');
+	if (TurnoReal() == 'White'){
+		$('#wQPromotion').show();
+		$('#wRPromotion').show();
+		$('#wNPromotion').show();
+		$('#wBPromotion').show();
+		$('#bQPromotion').hide();
+		$('#bRPromotion').hide();
+		$('#bNPromotion').hide();
+		$('#bBPromotion').hide();
+	}else{
+		$('#bQPromotion').show();
+		$('#bRPromotion').show();
+		$('#bNPromotion').show();
+		$('#bBPromotion').show();
+		$('#wQPromotion').hide();
+		$('#wRPromotion').hide();
+		$('#wNPromotion').hide();
+		$('#wBPromotion').hide();
+	}
+}
+
 function IniGridGames(){
 	jQuery('#GridGames').jqGrid({
 		datatype: 'local',

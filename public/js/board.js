@@ -1,9 +1,126 @@
 var OfreciendoTablas = false;
 var squareClass = 'square-55d63';
 var PrimeraJugada = true;
+var BufferFrom;
+var BufferTo;
 
 function onMoveEnd() {
     //$('#board1').find('.square-' + squareToHighlight).addClass('highlight');
+}
+
+function ChoicePiece(piece){
+    
+    chess.move({ from:BufferFrom, to:BufferTo, promotion:piece }); 
+    board1.position(chess.fen());
+    $('#DialogPromotion').dialog('close');
+
+    StopTimer('Abajo');
+    socket.emit('SendPos',{source:BufferFrom,target:BufferTo,promotion:piece,PlayRoom:PlayRoom,TiempoRestanteAbajo:TiempoRestanteAbajo});
+    MiTurno = false;            
+    StartTimer('Arriba');
+    $('#btAbortarPartida').hide();
+    $('#btOfrecerTablas').show();
+    $('#btResign').show();
+    $('#DeclinarTablas').hide();
+    DrawGame();
+
+    if (OfreciendoTablas){
+        OfreciendoTablas = false;
+        DeclinarTablas(); 
+    }
+    
+    if (chess.isGameOver()){
+        StopTimer('Arriba');
+        $('#btOfrecerTablas').hide();
+        $('#btResign').hide();
+        $('#btMain').show();
+        ResetBotones();                
+    }
+    
+    if (chess.isCheckmate()){                
+
+        if (nSound == 1){
+            ion.sound.play('win');
+        }
+        
+        $('#lbResultadoJugador').text('1');
+        $('#lbResultadoOponente').text('0');
+
+        if (Rated == 'Rated'){
+            var Dif = MyElo - OpElo;
+            var Exig = CalcularExigencia(Dif);
+            VarElo = (100 - Exig)/5;
+            MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+            MyElo = Math.round(MyElo);
+            OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+            OpElo = Math.round(OpElo); 
+        }else{
+            VarElo = 0;
+        }
+        
+        socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+
+        var Resultado;
+        if (Turno() == 'White'){
+            Resultado = '1-0';
+        }else{
+            Resultado = '0-1';
+        }
+        socket.emit('UpdateStatusGame',{Resultado:Resultado,GameId:GameId});
+
+        $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
+        
+        $('#ResultMessage').text('You have won the game by CheckMate. Your new rating is: ' + MyElo + ' (+' + VarElo + ')')
+        $('#DialogMessage').dialog('open');                 
+
+    }else if (chess.isDraw()){
+
+        if (nSound == 1){
+            ion.sound.play('draw');
+        }
+
+        $('#lbResultadoJugador').text('1/2');
+        $('#lbResultadoOponente').text('1/2');
+
+        if (Rated == 'Rated'){
+            var Dif = MyElo - OpElo;
+            var Exig = CalcularExigencia(Dif);
+            VarElo = (50 - Exig)/5;
+            MyElo = (parseFloat(MyElo) + parseFloat(VarElo));
+            MyElo = Math.round(MyElo);
+            OpElo = (parseFloat(OpElo) - parseFloat(VarElo));
+            OpElo = Math.round(OpElo);
+        }else{
+            VarElo = 0;
+        }
+
+        socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+        socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
+
+        $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
+        
+        var cVarElo;
+        if (VarElo >= 0){
+            cVarElo = '+' + VarElo;
+        }else{
+            cVarElo = VarElo;
+        }
+
+        if (chess.isInsufficientMaterial()){
+            $('#ResultMessage').text('The game was draw by Insufficient Material. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#DialogMessage').dialog('open');
+        }else if (chess.isStalemate()){
+            $('#ResultMessage').text('The game was draw by Stalemate. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#DialogMessage').dialog('open');
+        }else if (chess.isThreefoldRepetition()){
+            $('#ResultMessage').text('The game was draw by Threefold Repetition. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#DialogMessage').dialog('open');
+        }else{
+            $('#ResultMessage').text('The game was draw by 50-move rule. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
+            $('#DialogMessage').dialog('open');
+        }
+    }
+
 }
 
 function onDrop (source, target, piece, newPos, oldPos, orientation){
@@ -27,6 +144,17 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
             }
             
             chess.move({ from:source, to:target, promotion:'q' }); 
+
+            if ((nPromote == 0) && (chess.history({ verbose: true })[chess.history({ verbose: true }).length - 1].promotion == 'q')){
+                BufferFrom = source;
+                BufferTo = target;
+                chess.undo();
+                DialogPromotion();
+                return;
+            }
+            
+            //alert(chess.history({ verbose: true })[chess.history({ verbose: true }).length - 1].promotion)
+
             StopTimer('Abajo');
             socket.emit('SendPos',{source:source,target:target,promotion:'q',PlayRoom:PlayRoom,TiempoRestanteAbajo:TiempoRestanteAbajo});
             MiTurno = false;            
@@ -300,6 +428,9 @@ function UpdateTimer(Posicion) {
     }else{
         $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo - ValorTiempoTranscurrido));        
         if((TiempoRestanteAbajo - ValorTiempoTranscurrido)<=0){
+            // Prevenir cerrar dialogo
+            $('#DialogPromotion').dialog('close');
+            
             // Fin de tiempo
             // Comprobar tablas por rey solo
             if (KingAlone(Turno())){

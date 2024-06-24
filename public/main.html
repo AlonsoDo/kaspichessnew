@@ -265,6 +265,7 @@
             IniDialogNewGame();
             IniDialogSetting();
             IniDialogReconnect();
+            IniDialogPromotion();
 
             socket.on('ConnectToRoom',function(data){               
                // General Room
@@ -387,6 +388,38 @@
                AbortedGameByServerBack();
             });
 
+            $('#wQPromotion').on('click',function(){
+               ChoicePiece('q');
+            });
+
+            $('#wRPromotion').on('click',function(){
+               ChoicePiece('r');
+            });
+
+            $('#wNPromotion').on('click',function(){
+               ChoicePiece('n');
+            });
+
+            $('#wBPromotion').on('click',function(){
+               ChoicePiece('b');
+            });
+
+            $('#bQPromotion').on('click',function(){
+               ChoicePiece('q');
+            });
+
+            $('#bRPromotion').on('click',function(){
+               ChoicePiece('r');
+            });
+
+            $('#bNPromotion').on('click',function(){
+               ChoicePiece('n');
+            });
+
+            $('#bBPromotion').on('click',function(){
+               ChoicePiece('b');
+            });
+
          });
       </script>
    </head>
@@ -395,7 +428,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.4.9 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.5.1 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -516,6 +549,16 @@
          </div>
          <div id="DialogMessage" title="Information">
             <p id="ResultMessage"></p>
+         </div>
+         <div id="DialogPromotion" title="Promotion">
+            <img id="wQPromotion" src="img/chesspieces/wikipedia/wQ.png" width="60" height="60" style="border:2px solid black; margin-top:10px;">
+            <img id="wRPromotion" src="img/chesspieces/wikipedia/wR.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
+            <img id="wNPromotion" src="img/chesspieces/wikipedia/wN.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
+            <img id="wBPromotion" src="img/chesspieces/wikipedia/wB.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
+            <img id="bQPromotion" src="img/chesspieces/wikipedia/bQ.png" width="60" height="60" style="border:2px solid black; margin-top:10px;">
+            <img id="bRPromotion" src="img/chesspieces/wikipedia/bR.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
+            <img id="bNPromotion" src="img/chesspieces/wikipedia/bN.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
+            <img id="bBPromotion" src="img/chesspieces/wikipedia/bB.png" width="60" height="60" style="border:2px solid black; margin-top:10px;"> 
          </div>
          <div id="DialogReconnect" title="Information">
             <p id="ReconnectMessage">You have lost the connection.</p>
