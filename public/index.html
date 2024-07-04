@@ -69,8 +69,8 @@
 
                 
                 $('#btPlayAsGuest').on('click',function(){
-                    window.location = 'http://localhost:3000/main.html?name=Guest';
-                    //window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name=Guest';
+                    //window.location = 'http://localhost:3000/main.html?name=Guest';
+                    window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name=Guest';
                 });
                 
                 $('#btLogin').on('click',function(){
@@ -82,8 +82,8 @@
                         $('#Message').text('Error trying to login. NickName o PassWord inconrect.');
                         $('#DialogMessage').dialog('open');
                     }else{
-                        window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val();
-                        //window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+$('#NickName').val();
+                        //window.location = 'http://localhost:3000/main.html?name='+$('#NickName').val();
+                        window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+$('#NickName').val();
                     }                    
                 });
 

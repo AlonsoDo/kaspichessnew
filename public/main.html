@@ -53,6 +53,7 @@
          var board1;
          var Room;
          var MyName;
+         var OpName;
          var MyElo;
          var OpElo;
          var Rated;
@@ -214,7 +215,14 @@
             $('#btSetting').button();   
             $('#btReloadPlayers').button(); 
             $('#btReloadGames').button();
-            $('#btShareChessClub').button();      
+            $('#btShareChessClub').button();
+            $('#btRematch').button();  
+            $('#btRematch').hide(); 
+            $('#OfrecerRematch').hide(); 
+            $('#OfrecerRematch2').hide();
+            $('#btAceptarRematch').button();
+            $('#btDeclinarRematch').button();  
+            $('#DeclinarRematch').hide();
 
             $('#btSendMensageGeneralChat').on('click',function(){
                socket.emit('SendMensageGeneralChat',{PlayerName:MyName,ChatText:$('#TextMensageGeneralChat').val()});
@@ -320,6 +328,15 @@
                DeclinarTablas();               
             });
 
+            $('#btRematch').on('click',function(){
+               $('#btRematch').hide();
+               $('#OfrecerRematch').show(); 
+               if (nSound == 1){
+                  ion.sound.play('draw');
+               }
+               socket.emit('OfrecerRematch',{PlayRoom:PlayRoom});                 
+            });
+
             $('#btStats').on('click',function(){
                socket.emit('Stats',{PlayerName:MyName});              
             });
@@ -377,7 +394,7 @@
             });  
             
             socket.on('disconnect', function(){
-               $("#DialogReconnect").dialog('open');
+               $('#DialogReconnect').dialog('open');
             });
 
             socket.on('AbortedGameBack', function(data){
@@ -386,6 +403,14 @@
 
             socket.on('AbortedGameByServerBack', function(data){
                AbortedGameByServerBack();
+            });
+
+            socket.on('OfrecerRematchBack', function(data){
+               $('#btRematch').hide();
+               $('#OfrecerRematch2').show();
+               if (nSound == 1){
+                  ion.sound.play('draw');
+               }
             });
 
             $('#wQPromotion').on('click',function(){
@@ -420,6 +445,28 @@
                ChoicePiece('b');
             });
 
+            $('#btDeclinarRematch').on('click',function(){
+               $('#OfrecerRematch2').hide();
+               socket.emit('DeclinarRematch',{PlayRoom:PlayRoom});
+            });
+
+            $('#btAceptarRematch').on('click',function(){
+               $('#OfrecerRematch2').hide();
+               $('#btMain').hide();
+               var Color;
+               if (ColorSide == 'Blancas'){
+                  Color = 'White';
+               }else{
+                  Color = 'Black';
+               }
+               AceptarRetoBack({OpName:OpName,Rated:Rated,CountryLong:OpCountryLong,Flag:OpCountry,MyName:MyName,MyElo:OpElo,Minutes:(TiempoPartida/60000),Seconds:(SegundosIncremento/1000),Room:PlayRoom,Color:Color})
+            });   
+
+            socket.on('DeclinarRematchBack', function(data){
+               $('#OfrecerRematch').hide();
+               $('#DeclinarRematch').show();
+            });
+
          });
       </script>
    </head>
@@ -428,7 +475,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.5.1 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.5.3 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -528,6 +575,7 @@
                <button style="width:120px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btOfrecerTablas" title="Offer draw" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-grip-solid-horizontal">icon</span>Draw</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btResign" title="Resign the game" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-back">icon</span>Resign</button>
                <button style="width:140px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btMain" title="Go to main screen" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-home">icon</span>Main</button>
+               <button style="width:150px; float:left; margin-top:10px; margin-left:10px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btRematch" title="Offer rematch" type="button"><span style="float:left; font-size:34px; margin-left:-10px;" class="ui-icon ui-icon-refresh">icon</span>Rematch</button>
                <div id="OfrecerTablas" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
                   <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offering draw</label>								
                </div>
@@ -538,6 +586,17 @@
                </div>
                <div id="DeclinarTablas" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
                   <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offer draw declined</label>								
+               </div>
+               <div id="OfrecerRematch" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offering rematch</label>								
+               </div>
+               <div id="OfrecerRematch2" style="margin-left:5px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:360px; height:50px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Rematch?</label>								
+                  <button style="width:116px; float:left; margin-top:10px; margin-left:5px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btAceptarRematch" title="Accept rematch" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-check">icon</span>Accept</button>
+                  <button style="width:120px; float:left; margin-top:10px; margin-left:5px; font-family:Arial,Helvetica,sans-serif; font-weight:bold;" id="btDeclinarRematch" title="Decline rematch offer" type="button"><span style="float:left; font-size:24px; margin-left:-10px;" class="ui-icon ui-icon-forbidden">icon</span>Decline</button>
+               </div>
+               <div id="DeclinarRematch" style="margin-left:10px; margin-top:10px; float:left; background-color:#daa351; border:0px black solid; width:110px; height:40px;">
+                  <label style="color:black; margin-left:0px; margin-top:8px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Offer rematch declined</label>								
                </div>
             </div>
          </div>

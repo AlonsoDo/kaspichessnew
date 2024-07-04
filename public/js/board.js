@@ -34,6 +34,7 @@ function ChoicePiece(piece){
         $('#btOfrecerTablas').hide();
         $('#btResign').hide();
         $('#btMain').show();
+        $('#btRematch').show();
         ResetBotones();                
     }
     
@@ -153,8 +154,6 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 return;
             }
             
-            //alert(chess.history({ verbose: true })[chess.history({ verbose: true }).length - 1].promotion)
-
             StopTimer('Abajo');
             socket.emit('SendPos',{source:source,target:target,promotion:'q',PlayRoom:PlayRoom,TiempoRestanteAbajo:TiempoRestanteAbajo});
             MiTurno = false;            
@@ -175,6 +174,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 $('#btOfrecerTablas').hide();
                 $('#btResign').hide();
                 $('#btMain').show();
+                $('#btRematch').show();
                 ResetBotones();                
             }
             
@@ -301,6 +301,7 @@ function SendPosBack(data){
         $('#DeclinarTablas').hide();
         $('#btResign').hide();
         $('#btMain').show();
+        $('#btRematch').show();
         ResetBotones();        
     }
     
@@ -439,6 +440,7 @@ function UpdateTimer(Posicion) {
                 $('#btOfrecerTablas').hide();
                 $('#btResign').hide();
                 $('#btMain').show();
+                $('#btRematch').show();
                 ResetBotones();
                 if (nSound == 1){
                     ion.sound.play('draw');
@@ -474,6 +476,7 @@ function UpdateTimer(Posicion) {
                 $('#btOfrecerTablas').hide();
                 $('#btResign').hide();
                 $('#btMain').show();
+                $('#btRematch').show();
                 ResetBotones();
                 if (nSound == 1){
                     ion.sound.play('lost');
@@ -573,6 +576,7 @@ function WinByTime(data){
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     ResetBotones();
 
     if (nSound == 1){
@@ -615,6 +619,7 @@ function DrawByTime(data){
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     ResetBotones();
     
     if (nSound == 1){
@@ -658,6 +663,7 @@ function AbortedGame(){
     $('#btAceptarTablas').hide();
     $('#btDeclinarTablas').hide();
     $('#btMain').show();
+    $('#btRematch').show();
 
     if (nSound == 1){
         ion.sound.play('cancel');
@@ -688,6 +694,7 @@ function AbortedGameByServer(){
     $('#btAceptarTablas').hide();
     $('#btDeclinarTablas').hide();
     $('#btMain').show();
+    $('#btRematch').show();
 
     if (nSound == 1){
         ion.sound.play('cancel');
@@ -720,6 +727,7 @@ function AbortedGameBack(){
     $('#btResign').hide();
     $('#btAbortarPartida').hide();
     $('#btMain').show();
+    $('#btRematch').show();
 
     if (nSound == 1){
         ion.sound.play('cancel');
@@ -748,6 +756,7 @@ function AbortedGameByServerBack(){
     $('#btResign').hide();
     $('#btAbortarPartida').hide();
     $('#btMain').show();
+    $('#btRematch').show();
 
     if (nSound == 1){
         ion.sound.play('cancel');
@@ -775,6 +784,7 @@ function LostByResign(){
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     ResetBotones();
     if (nSound == 1){
         ion.sound.play('lost');
@@ -823,6 +833,7 @@ function WinByResign(data){
     $('#btOfrecerTablas').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     ResetBotones();
     if (nSound == 1){
         ion.sound.play('win');
@@ -914,6 +925,10 @@ function GoToMain(){
 
     $('#DeclinarTablas').hide();
     $('#btMain').hide();
+    $('#btRematch').hide();
+    $('#OfrecerRematch').hide();
+    $('#OfrecerRematch2').hide();
+    $('#DeclinarRematch').hide();
     $('#btCrearReto').show();
 
     chess.reset();
@@ -955,6 +970,7 @@ function AceptarTablas(){
     $('#OfrecerTablas2').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     
     if (MiTurno){
         StopTimer('Abajo');
@@ -1006,6 +1022,7 @@ function AceptarTablasBack(data){
     //$('#OfrecerTablas2').hide();
     $('#btResign').hide();
     $('#btMain').show();
+    $('#btRematch').show();
     
     if (MiTurno){
         StopTimer('Abajo');

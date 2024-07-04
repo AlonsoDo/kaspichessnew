@@ -9,7 +9,7 @@ var nodemailer = require('nodemailer');
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -389,6 +389,18 @@ io.on('connection', function(socket){
       });
 
    }); 
+   
+   socket.on('OfrecerRematch',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      //Send this event to everyone in the room excect the sender.
+      socket.broadcast.to(data.PlayRoom).emit('OfrecerRematchBack',data);
+   });
+
+   socket.on('DeclinarRematch',function(data){
+      console.log('Play Room: ' + data.PlayRoom)
+      //Send this event to everyone in the room excect the sender.
+      socket.broadcast.to(data.PlayRoom).emit('DeclinarRematchBack',data);
+   });
    
    socket.on('AbortedGame',function(data){
       console.log('Play Room: ' + data.PlayRoom)
