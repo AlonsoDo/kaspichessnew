@@ -138,6 +138,8 @@ function AceptarRetoBack(data){
 
         socket.emit('UpdateStatus',{MyName:data.MyName,MyElo:MyElo,Status:'Playing',PlayRoom:PlayRoom});
         socket.emit('Welcome',{MyName:data.MyName,Welcome:cWelcome,PlayRoom:PlayRoom});
+
+        Status = 'Playing';
     }
 }
 
@@ -224,6 +226,8 @@ function SetValuesBack(data){
 
     socket.emit('UpdateStatus',{MyName:data.OpName,MyElo:MyElo,Status:'Playing',PlayRoom:PlayRoom});
     socket.emit('Welcome',{MyName:data.OpName,Welcome:cWelcome,PlayRoom:PlayRoom});
+
+    Status = 'Playing';
 }
 
 function ActualizarRetos(data){

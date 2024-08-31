@@ -5,11 +5,12 @@ var io = require('socket.io')(http);
 var favicon = require('serve-favicon');
 var mysql = require('mysql2');
 var nodemailer = require('nodemailer');
+var Mailjet = require('node-mailjet');
 
 var pool  = mysql.createPool({
   host     : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
   user     : 'fzeh0bd62uerjm8m',
-  password : 'aqrgaujeb7mb',
+  password : 'aqrgaujeb7mbf9i6',
   database : 'ap8pmvpwz7gc4jxd',
   port: '3306',
   connectionLimit : 10
@@ -50,6 +51,15 @@ io.on('connection', function(socket){
          });   
       });
    });
+   
+   socket.on('ChangeStatus',function(data){
+      for (var i = 0; i < aPlayers.length; i++){
+         if (aPlayers[i].PlayerName == data.MyName){ 
+            aPlayers[i].Status = data.Status;
+            break;   
+         }     
+      }
+   });   
    
    socket.on('UpdateStatus',function(data){
       for (var i = 0; i < aPlayers.length; i++){
@@ -133,40 +143,50 @@ io.on('connection', function(socket){
             var PassWord = rows[0].PassWord;
             var Email = rows[0].Email;
 
-            var transporter = nodemailer.createTransport({
-               service: "hotmail",
-               auth: {
-                   user: "alonso_caspi@hotmail.com",
-                   pass: "****"
-               }
-            });
-            
-            // Email data
-            var mailOptions = {
-               from: 'KaspiChess <alonso_caspi@hotmail.com>',
-               to: Email,
-               subject: 'Here is your password',
-               text: "Hello Friend \r\n" +
-                     " \r\n" +
-                     " Forgot your data? Do not worry.\r\n" +
-                     " Here are.\r\n" +
-                     " \r\n" +
-                     " Your NickName: " + NickName + "\r\n" +
-                     " Your Password: " + PassWord + "\r\n" +
-                     " \r\n" +
-                     " I hope you continue enjoying at KaspiChess.\r\n" +
-                     " Best regards.",
-            };
-            
-            // Send the email
-            transporter.sendMail(mailOptions, (error, info) => {
-               if (error) {
-               console.error('Error sending email:', error);
-               } else {
-               console.log('Email sent:', info.response);
-               }
-            });
-            
+            var mailjet = Mailjet.apiConnect(
+               'a09e31d61600d6fc66fcb3b4755fd78a',
+               'dc076d228431b298533da532f04b70a9',
+            );
+
+            var request = mailjet
+               .post('send', { version: 'v3.1' })
+               .request({
+                  Messages: [
+                     {
+                     From: {
+                        Email: "info@kaspichess.com",
+                        Name: "Alonso Dominguez"
+                     },
+                     To: [
+                        {
+                           Email: Email,
+                           Name: "Player"
+                        }
+                     ],
+                     Subject: 'Here is your password',
+                     TextPart: "Hello Friend \r\n" +
+                                 " \r\n" +
+                                 " Forgot your data? Do not worry.\r\n" +
+                                 " Here are.\r\n" +
+                                 " \r\n" +
+                                 " Your NickName: " + NickName + "\r\n" +
+                                 " Your Password: " + PassWord + "\r\n" +
+                                 " \r\n" +
+                                 " I hope you continue enjoying at KaspiChess.\r\n" +
+                                 " Best regards.",
+                     HTMLPart: ""
+                     }
+                  ]
+               })
+
+         request
+            .then((result) => {
+               console.log(result.body)
+            })
+            .catch((err) => {
+               console.log(err.statusCode)
+            })
+
             io.to(socket.id).emit('ForgotPassBack',{Error:false});
          }                        
          connection.release();        
@@ -442,6 +462,10 @@ io.on('connection', function(socket){
       console.log(data.Color)
       socket.broadcast.to(data.Room).emit('SetValuesBack',data);
    });
+
+   socket.on('JoinRoom',function(data){
+      socket.join(data.PlayRoom);
+   });   
    
    socket.on('AceptarReto',function(data){
       console.log('AceptarReto')
@@ -580,6 +604,24 @@ io.on('connection', function(socket){
       console.log('Declinar tablas')
       socket.broadcast.to(data.PlayRoom).emit('DeclinarTablasBack',data);
    });
+
+   socket.on('AskIniPos',function(data){
+      socket.to(data.WhoPlayer).emit('AskIniPosBack',data);      
+   });
+
+   socket.on('GetingIniPos',function(data){
+      socket.to(data.WhoAsk).emit('GetingIniPosBack',data);      
+   });
+
+   socket.on('AskSocketId',function(data){
+      for (var i = 0; i < aPlayers.length; i++){
+         if (data.PlayerName == aPlayers[i].PlayerName){
+            console.log(data.WhoAsk)
+            io.to(data.WhoAsk).emit('AskSocketIdBack',{SocketId:aPlayers[i].SocketId});            
+            break;
+         }
+      }     
+   });   
 
 })
 

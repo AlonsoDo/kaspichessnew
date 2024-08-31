@@ -60,6 +60,7 @@ function ChoicePiece(piece){
         }
         
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+        Status = 'On Line';
 
         var Resultado;
         if (Turno() == 'White'){
@@ -96,6 +97,7 @@ function ChoicePiece(piece){
         }
 
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+        Status = 'On Line';
         socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
         $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
@@ -200,6 +202,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 }
                 
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
+                Status = 'On Line';
 
                 var Resultado;
                 if (Turno() == 'White'){
@@ -238,6 +241,8 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
                 socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
+                Status = 'On Line';
+
                 $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
                 
                 var cVarElo;
@@ -269,6 +274,40 @@ function onDrop (source, target, piece, newPos, oldPos, orientation){
 
 function onSnapEnd(){
     board1.position(chess.fen());
+}
+
+function SendPosBackWatching(data){
+    
+    // Bloquear hacer movimientos mientras se observa
+    MiTurno = false;
+    
+    if (nHighlight == 1){
+        $('#board1').find('.' + squareClass).removeClass('highlight');
+        $('#board1').find('.square-' + data.source).addClass('highlight');
+        $('#board1').find('.square-' + data.target).addClass('highlight');
+        //squareToHighlight = target;
+    }
+
+    if (nSound == 1){
+        ion.sound.play('move');
+    }
+    
+    chess.move({ from:data.source,to:data.target,promotion:data.promotion});
+    board1.position(chess.fen());
+
+    TiempoPensando = 0;
+    
+    if (RelojAbajo){
+        RelojAbajo = false;
+        StopTimer2('Abajo');
+        TiempoRestanteAbajo = data.TiempoRestanteAbajo;
+        StartTimer2('Arriba');
+    }else{
+        RelojAbajo = true;
+        StopTimer2('Arriba');
+        TiempoRestanteArriba = data.TiempoRestanteAbajo;
+        StartTimer2('Abajo');
+    }
 }
 
 function SendPosBack(data){
@@ -328,6 +367,8 @@ function SendPosBack(data){
         
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
+        Status = 'On Line';
+
         var Resultado;
         if (Turno() == 'White'){
             Resultado = '1-0';
@@ -361,6 +402,8 @@ function SendPosBack(data){
         }
 
         socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+
+        Status = 'On Line';
 
         $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
         
@@ -408,6 +451,36 @@ function StartTimer(Posicion) {
         MyTimer = setInterval( function() { UpdateTimer('Abajo'); } , 50 );        
     }        
   
+}
+
+function StartTimer2(Posicion) {
+
+    clearInterval(MyTimer);
+    StartTime = new Date();
+    
+    if (Posicion=='Arriba'){
+        MyTimer = setInterval( function() { UpdateTimer2('Arriba'); } , 50 );        
+    }else{
+        MyTimer = setInterval( function() { UpdateTimer2('Abajo'); } , 50 );        
+    }        
+  
+}
+
+function UpdateTimer2(Posicion) {
+
+    ValorTiempoTranscurrido = ContadorTiempo() + TiempoPensando;
+
+    if (Posicion=='Arriba') {
+        $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba - ValorTiempoTranscurrido));         
+        if((TiempoRestanteArriba - ValorTiempoTranscurrido)<=0){
+            $('#lbRelojOponente').text('00:00:00');    
+        }        
+    }else{
+        $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo - ValorTiempoTranscurrido));        
+        if((TiempoRestanteAbajo - ValorTiempoTranscurrido)<=0){
+            $('#lbRelojJugador').text('00:00:00');
+        }
+    }
 }
 
 function UpdateTimer(Posicion) {
@@ -466,6 +539,8 @@ function UpdateTimer(Posicion) {
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
                 socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
+                Status = 'On Line';
+
                 $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">' + Resultado + '</label>');
         
                 $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (' + VarElo + ')');
@@ -501,6 +576,8 @@ function UpdateTimer(Posicion) {
                 socket.emit('LostByTime',{PlayRoom:PlayRoom});
                 socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
 
+                Status = 'On Line';
+
                 var Resultado;
                 if (Turno() == 'White'){
                     Resultado = '1-0';
@@ -530,6 +607,22 @@ function ContadorTiempo() {
 }
 
 function StopTimer(Posicion) {    
+    
+    clearInterval(MyTimer);
+    
+    if (Posicion=='Arriba') {
+        TiempoRestanteArriba = TiempoRestanteArriba - ValorTiempoTranscurrido;
+        TiempoRestanteArriba = TiempoRestanteArriba + parseInt(SegundosIncremento);
+        $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba));                
+    }else{
+        TiempoRestanteAbajo = TiempoRestanteAbajo - ValorTiempoTranscurrido;
+        TiempoRestanteAbajo = TiempoRestanteAbajo + parseInt(SegundosIncremento);
+        $('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo));                
+    }    
+    
+}
+
+function StopTimer2(Posicion) {    
     
     clearInterval(MyTimer);
     
@@ -600,6 +693,8 @@ function WinByTime(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
+    Status = 'On Line';
+
     var Resultado;
     if (Turno() == 'White'){
         Resultado = '1-0';
@@ -610,6 +705,205 @@ function WinByTime(data){
         
     $('#ResultMessage').text('You have won the game by time. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
     $('#DialogMessage').dialog('open'); 
+}
+
+function WinByTimeWatching(data){
+    
+    var VarElo;
+    var Dif;
+    var Exig;
+    
+    if (nSound == 1){
+        ion.sound.play('win');
+    }
+    
+    if (RelojAbajo){
+        StopTimer2('Abajo');
+        $('#lbResultadoJugador').text('0');
+        $('#lbResultadoOponente').text('1');  
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif); 
+        if (BufferRated == 'Rated'){
+            VarElo = (0 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        } 
+    }else{
+        StopTimer2('Arriba');
+        $('#lbResultadoJugador').text('1');
+        $('#lbResultadoOponente').text('0');
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif);
+        if (BufferRated == 'Rated'){
+            VarElo = (100 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        }
+    }
+    
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});  
+    Status = 'On Line';
+}
+
+function WinByResignWatching(data){
+    
+    //alert(data.PlayerWhoResign)
+    //alert(WhoPlayer)
+    
+    var VarElo;
+    var Dif;
+    var Exig;
+    
+    if (nSound == 1){
+        ion.sound.play('win');
+    }
+    
+    if (RelojAbajo){
+        StopTimer2('Abajo');        
+    }else{
+        StopTimer2('Arriba');
+    }
+
+    if (data.PlayerWhoResign == WhoPlayer){
+        $('#lbResultadoJugador').text('0');
+        $('#lbResultadoOponente').text('1');  
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif); 
+        if (BufferRated == 'Rated'){
+            VarElo = (0 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        } 
+    }else{
+        $('#lbResultadoJugador').text('1');
+        $('#lbResultadoOponente').text('0');
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif);
+        if (BufferRated == 'Rated'){
+            VarElo = (100 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        }
+    }
+    
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});  
+    Status = 'On Line';
+}
+
+function AceptarTablasBackWatching(data){
+    var VarElo;
+    var Dif;
+    var Exig;
+    
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
+    
+    if (RelojAbajo){
+        StopTimer2('Abajo');
+        $('#lbResultadoJugador').text('1/2');
+        $('#lbResultadoOponente').text('1/2');  
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif); 
+        if (BufferRated == 'Rated'){
+            VarElo = (50 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        } 
+    }else{
+        StopTimer2('Arriba');
+        $('#lbResultadoJugador').text('1/2');
+        $('#lbResultadoOponente').text('1/2');
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif);
+        if (BufferRated == 'Rated'){
+            VarElo = (50 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        }
+    }
+    
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});  
+    Status = 'On Line';
+}
+
+function DiscPlayingWatching(data){
+    StopTimer2('Abajo');
+    StopTimer2('Arriba');
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});  
+    Status = 'On Line';
+    $('#ResultMessage').text('One player has disconnected the game.');
+    $('#DialogMessage').dialog('open'); 
+}
+
+function DrawByTimeWatching(data){
+    
+    var VarElo;
+    var Dif;
+    var Exig;
+    
+    if (nSound == 1){
+        ion.sound.play('draw');
+    }
+    
+    if (RelojAbajo){
+        StopTimer2('Abajo');
+        $('#lbResultadoJugador').text('1/2');
+        $('#lbResultadoOponente').text('1/2');  
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif); 
+        if (BufferRated == 'Rated'){
+            VarElo = (50 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        } 
+    }else{
+        StopTimer2('Arriba');
+        $('#lbResultadoJugador').text('1/2');
+        $('#lbResultadoOponente').text('1/2');
+        Dif = BufferMyElo - BufferOpElo;
+        Exig = CalcularExigencia(Dif);
+        if (BufferRated == 'Rated'){
+            VarElo = (50 - Exig)/5;
+            BufferMyElo = (parseFloat(BufferMyElo) + parseFloat(VarElo));
+            BufferMyElo = Math.round(BufferMyElo);
+            BufferOpElo = (parseFloat(BufferOpElo) - parseFloat(VarElo));
+            BufferOpElo = Math.round(BufferOpElo);
+            $('#lbRatingJugador').text(BufferMyElo);
+            $('#lbRatingOponente').text(BufferOpElo);
+        }
+    }
+    
+    socket.emit('LeaveRoom',{PlayRoom:PlayRoom});  
+    Status = 'On Line';
 }
 
 function DrawByTime(data){
@@ -643,6 +937,8 @@ function DrawByTime(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
 
+    Status = 'On Line';
+
     $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
         
     $('#ResultMessage').text('The game was draw for insufficient material. Your new rating is: ' + MyElo + ' (+' + VarElo + ')');
@@ -670,6 +966,8 @@ function AbortedGame(){
     }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    Status = 'On Line';
 
     socket.emit('UpdateStatusGame',{Resultado:'Aborted',GameId:GameId});
 
@@ -701,6 +999,8 @@ function AbortedGameByServer(){
     }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
+
+    Status = 'On Line';
 
     socket.emit('UpdateStatusGame',{Resultado:'Aborted',GameId:GameId});
 
@@ -735,6 +1035,8 @@ function AbortedGameBack(){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
 
+    Status = 'On Line';
+
     $('#ResultMessage').text('The game has been aborted')
     $('#DialogMessage').dialog('open');
     
@@ -764,6 +1066,8 @@ function AbortedGameByServerBack(){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:'Aborted'});
 
+    Status = 'On Line';
+
     $('#ResultMessage').text('The game has been aborted by the server.')
     $('#DialogMessage').dialog('open');
     
@@ -773,7 +1077,7 @@ function LostByResign(){
 
     var VarElo;
     
-    socket.emit('LostByResign',{PlayRoom:PlayRoom});
+    socket.emit('LostByResign',{PlayRoom:PlayRoom,PlayerWhoResign:socket.id});
         
     if (MiTurno){
         StopTimer('Abajo');
@@ -805,6 +1109,8 @@ function LostByResign(){
     }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:0});
+
+    Status = 'On Line';
 
     var Resultado;
     if (Turno() == 'White'){
@@ -855,6 +1161,8 @@ function WinByResign(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
 
+    Status = 'On Line';
+
     var Resultado;
     if (Turno() == 'White'){
         Resultado = '0-1';
@@ -901,6 +1209,8 @@ function DiscPlaying(data){
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:100});
     socket.emit('UpdateStatusDesc',{MyName:data.PlayerName,MyElo:OpElo});
+
+    Status = 'On Line';
 
     var Resultado;
     if (Turno() == 'White'){
@@ -1007,6 +1317,8 @@ function AceptarTablas(){
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
     socket.emit('UpdateStatusGame',{Resultado:'1/2-1/2',GameId:GameId});
 
+    Status = 'On Line';
+
     $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
         
     $('#ResultMessage').text('The game was draw by mutual agreement. Your new rating is: ' + MyElo + ' (' + cVarElo + ')');
@@ -1056,6 +1368,8 @@ function AceptarTablasBack(data){
     }
 
     socket.emit('UpdateStatus',{MyName:MyName,Status:'On Line',MyElo:MyElo,Result:50});
+
+    Status = 'On Line';
 
     $('#DivGame').append('<label style="margin-left:4px; margin-top:4px; color:black; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:18px;">1/2-1/2</label>');
             

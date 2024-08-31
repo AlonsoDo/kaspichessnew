@@ -62,6 +62,7 @@
          var RoomReto;
          var PlayRoom;
          var GameId;
+         var Status = 'On Line';
          
          $(document).ready(function(){
 
@@ -159,7 +160,11 @@
             });
             
             socket.on('SendPosBack',function(data){
-               SendPosBack(data);
+               if (Status == 'Watching'){
+                  SendPosBackWatching(data);
+               }else{
+                  SendPosBack(data);
+               }               
             });
             
             socket.on('SetValuesBack',function(data){
@@ -192,6 +197,8 @@
                socket.emit('CancelarReto',{MyName:MyName})
                $('#btCancelarReto').hide();
                $('#btCrearReto').show();
+               socket.emit('ChangeStatus',{MyName:MyName,Status:'On Line'});
+				   Status = 'On Line';
             });
 
             $('#btCancelarReto').button();
@@ -284,24 +291,43 @@
                ActualizarRetos(data);              
             });
 
-            socket.on('WinByTime',function(data){               
-               WinByTime(data);              
+            socket.on('WinByTime',function(data){ 
+               if (Status == 'Watching'){
+                  WinByTimeWatching(data);
+               }else{
+                  WinByTime(data);
+               }                             
             });
 
             socket.on('DrawByTime',function(data){               
-               DrawByTime(data);              
+               if (Status == 'Watching'){
+                  DrawByTimeWatching(data);
+               }else{
+                  DrawByTime(data);
+               }               
             });
 
             socket.on('WinByResign',function(data){               
-               WinByResign(data);              
+               if (Status == 'Watching'){
+                  WinByResignWatching(data);
+               }else{
+                  WinByResign(data);
+               }
+                             
             });
 
             socket.on('OfrecerTablasBack',function(data){               
-               OfrecerTablasBack(data);              
+               if (Status == 'Playing'){
+                  OfrecerTablasBack(data); 
+               }             
             });
 
-            socket.on('AceptarTablasBack',function(data){               
-               AceptarTablasBack(data);              
+            socket.on('AceptarTablasBack',function(data){ 
+               if (Status == 'Watching'){
+                  AceptarTablasBackWatching(data)
+               }else{                             
+                  AceptarTablasBack(data);
+               }              
             });
 
             socket.on('DeclinarTablasBack',function(data){               
@@ -390,7 +416,11 @@
             });
 
             socket.on('DiscPlaying',function(data){               
-               DiscPlaying(data)                           
+               if (Status == 'Watching'){
+                  DiscPlayingWatching(data);
+               }else{
+                  DiscPlaying(data);
+               }                                             
             });  
             
             socket.on('disconnect', function(){
@@ -467,6 +497,24 @@
                $('#DeclinarRematch').show();
             });
 
+            socket.on('AskIniPosBack', function(data){    
+               if (Status == 'Playing'){          
+                  socket.emit('GetingIniPos',{PlayRoom:PlayRoom,WhoAsk:data.WhoAsk,Rated:Rated,Color:ColorSide,Posi:chess.fen(),MiTurno:MiTurno,ValorTiempoTranscurrido:ValorTiempoTranscurrido,TiempoRestanteAbajo:TiempoRestanteAbajo,TiempoRestanteArriba:TiempoRestanteArriba,SegundosIncremento:SegundosIncremento,MyName:MyName,MyElo:MyElo,Country:cCountry,CountryLong:cCountryLong,OpName:OpName,OpElo:OpElo,OpCountry:OpCountry,OpCountryLong:OpCountryLong});
+               }
+            });
+
+            socket.on('GetingIniPosBack', function(data){
+               socket.emit('LeaveRoom',{PlayRoom:PlayRoom});                              
+               GetingIniPosBack(data);
+               socket.emit('JoinRoom',{PlayRoom:data.PlayRoom});
+            });
+
+            socket.on('AskSocketIdBack', function(data){               
+               //alert(data.SocketId)
+               var WhoAsk = socket.id;
+			      AskIniPos(data.SocketId,WhoAsk);                  
+            });
+
          });
       </script>
    </head>
@@ -475,7 +523,7 @@
          <div style="background-color:#daa351; border:0px black solid; width:1100px; height:60px;">
             <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">Welcome to</label>								
             <label style="color:#f7f5f4; margin-left:20px; margin-top:2px; float:left; font-family:Forte,Arial,Helvetica,sans-serif; font-weight:bold; font-size:40px;">KaspiChess.com</label>								
-            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.5.3 by Alonso Dominguez 2024</label>								
+            <label style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:20px;">version 0.6.3 by Alonso Dominguez 2024</label>								
             <label id="lbJugadorConectado" style="color:#f7f5f4; margin-left:20px; margin-top:6px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Player0000</label>								
          </div>
          <div id="ContenedorRetos" style="background-color:#daa351; border:0px black solid; width:546px; height:546px; margin-top:8px; margin-bottom:8px; margin-right:8px; float:left;">
@@ -546,12 +594,14 @@
                         <label style="color:#f7f5f4; margin-left:20px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Players on line</label>								
                         <label id="lbPlayersOnLine" style="color:#f7f5f4; margin-left:4px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">( 0 )</label>								
                         <button id="btReloadPlayers" style="padding:4px 4px 4px 4px; float:left; font-size:18px; font-weight:bold; margin-top:10px; margin-left:16px;" title="Reload players data">Refresh</button>
+                        <label style="color:#f7f5f4; margin-left:20px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Click on row to watch</label>								
                      </div>
                   </div>
                   <div id="tabs-3">
                      <table id="GridGames"></table>
                      <div style="background-color:#daa351; border:1px black solid; width:514px; height:52px;">
                         <button id="btReloadGames" style="padding:4px 4px 4px 4px; float:left; font-size:18px; font-weight:bold; margin-top:10px; margin-left:16px;" title="Reload games data">Refresh</button>
+                        <label style="color:#f7f5f4; margin-left:20px; margin-top:18px; float:left; font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:16px;">Click on row to watch the game</label>								
                      </div>
                   </div>
                   <div id="tabs-4">

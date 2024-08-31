@@ -6,6 +6,75 @@ var cWelcome = 'Hello';
 var cCountry = 'AD'; 
 var cCountryLong = 'Andorra'; 
 var WhoPlayer; 
+var TiempoPensando = 0;
+var RelojAbajo;
+var BufferRated;
+var BufferMyElo;
+var BufferOpElo;
+
+function GetingIniPosBack(data){
+
+	Status = 'Watching';
+	socket.emit('ChangeStatus',{MyName:MyName,Status:'Watching'});
+				  
+	PlayRoom = data.PlayRoom;
+	BufferRated = data.Rated;
+	
+	$('#ContenedorRetos').hide();
+	$('#btCrearReto').hide();
+	$('#btMain').show();
+    $('#ContenedorTablero').show();
+	$('#DivPrivateChat').html('');
+    $('#DivGame').html('');
+
+	$('#lbNombreJugador').text(data.MyName);
+    $('#lbNombreOponente').text(data.OpName);
+    $('#lbResultadoOponente').text('');
+    $('#lbResultadoJugador').text('');
+	$('#lbRatingOponente').text(data.OpElo);
+	BufferOpElo = data.OpElo;
+	$('#lbRatingJugador').text(data.MyElo);
+	BufferMyElo = data.MyElo;
+	var Flag = data.OpCountry.toLowerCase();
+	$('#ImgFlagOponente').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+	Flag = data.Country.toLowerCase();
+	$('#ImgFlagJugador').prop('src','res/img/flags/16/'+Flag+'.png?timestamp='+new Date().getTime());
+	$('#ImgFlagOponente').prop('title',data.OpCountryLong);
+    $('#ImgFlagJugador').prop('title',data.CountryLong);
+	
+	chess.reset();
+	chess.load(data.Posi);
+    board1.position(data.Posi);
+
+	TiempoRestanteArriba = data.TiempoRestanteArriba;
+    $('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba));
+	TiempoRestanteAbajo = data.TiempoRestanteAbajo;
+	$('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo));
+
+	SegundosIncremento = data.SegundosIncremento;
+	TiempoPensando = data.ValorTiempoTranscurrido;
+	
+	if (data.MiTurno){
+		$('#lbRelojJugador').text(FormatearMilisegundos(TiempoRestanteAbajo - data.ValorTiempoTranscurrido));
+		StartTimer2('Abajo');
+		RelojAbajo = true;
+	}else{
+		$('#lbRelojOponente').text(FormatearMilisegundos(TiempoRestanteArriba - data.ValorTiempoTranscurrido));
+		StartTimer2('Arriba');
+		RelojAbajo = false;
+	}
+	
+	//Reset side
+    if (IsFliped){
+        board1.flip();
+        IsFliped = false;
+    }
+
+	if (data.Color == 'Negras'){
+		board1.flip();
+        IsFliped = true;
+	}
+}
 
 function IniDialogPromotion(){
 	$('#DialogPromotion').dialog({
@@ -56,7 +125,11 @@ function IniGridGames(){
 		onSelectRow: function(id){
 		    var rowData = jQuery(this).getRowData(id); 
             var Room = rowData['Room']; 
-			alert(Room)                   
+			//alert(Room) 
+			var WhiteName = rowData['White'];
+			var WhoAsk = socket.id;
+			//alert(WhoAsk)
+			socket.emit('AskSocketId',{PlayerName:WhiteName,WhoAsk:WhoAsk});                  
 		}
     });
 }
@@ -85,9 +158,14 @@ function IniGridPlayers(){
 		onSelectRow: function(id){
 		    var rowData = jQuery(this).getRowData(id); 
             WhoPlayer = rowData['IdPlayer']; 
-			alert(WhoPlayer)                   
+			var WhoAsk = socket.id;
+			AskIniPos(WhoPlayer,WhoAsk);					                   
 		}
     });
+}
+
+function AskIniPos(WhoPlayer,WhoAsk){
+	socket.emit('AskIniPos',{WhoPlayer:WhoPlayer,WhoAsk:WhoAsk});            
 }
 
 function LoadPlayersBack(data){
@@ -196,8 +274,14 @@ function IniDialogReconnect(){
         buttons: {
           'Reconnect': function() {
             $(this).dialog('close');
-			//window.location = 'http://localhost:3000/main.html?name='+MyName;
-            window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+MyName;
+			var cadena = MyName.substring(0,6);
+			if (cadena == 'Player'){
+				//window.location = 'http://localhost:3000/main.html?name=Guest';
+            	window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name=Guest';
+			}else{
+				//window.location = 'http://localhost:3000/main.html?name='+MyName;
+            	window.location = 'https://kaspichessnew-11cf4b4869b9.herokuapp.com/main.html?name='+MyName;
+			}			
           }
         }
     });
@@ -250,6 +334,8 @@ function IniDialogNewGame(){
                   $('#btCrearReto').hide();
                   $(this).dialog('close');
 				  $('#Message2').text('');
+				  socket.emit('ChangeStatus',{MyName:MyName,Status:'Challenging'});
+				  Status = 'Challenging';
                 }                          
             }, 
             Cancel: function() {
