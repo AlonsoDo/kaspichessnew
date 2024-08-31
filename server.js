@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var favicon = require('serve-favicon');
 var mysql = require('mysql2');
-var nodemailer = require('nodemailer');
+//var nodemailer = require('nodemailer');
 var Mailjet = require('node-mailjet');
 
 var pool  = mysql.createPool({
